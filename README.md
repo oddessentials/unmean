@@ -1,3 +1,5 @@
+![unmean: a Claude Code chaperone to filter out unconstructive and demeaning prompts without interrupting your workflow](assets/og-image.png)
+
 # unmean
 
 A Claude Code plugin that removes or masks listed bad words before forwarding
@@ -99,4 +101,11 @@ claude plugin validate .
 
 MIT. See [LICENSE](LICENSE).
 
-Made by Odd Essentials, LLC.
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg">
+    <img src="assets/logo.svg" alt="unmean logo: a meditating figure holding a coral heart" width="120">
+  </picture>
+  <br>
+  Made by Odd Essentials, LLC. · <a href="https://oddessentials.ai/donate/">Donate</a>
+</p>
