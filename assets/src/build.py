@@ -1,4 +1,4 @@
-"""Draws the unmean logo and og-image into assets/.
+"""Draws the unmean logo, og-image and plugin icon.
 
 Needs Python with fontTools, the Inter 4.1 TTFs (https://github.com/rsms/inter/releases/tag/v4.1),
 and Inkscape for the PNG. Set INTER_DIR to the folder holding Inter-Bold.ttf and friends, and
@@ -120,6 +120,14 @@ def og_image(w=1280, h=640):
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">{"".join(parts)}</svg>'
 
 
+def icon(size=1024):
+    scale = size * 0.8 / 488
+    x, y = (size - 488 * scale) / 2, (size - 464 * scale) / 2
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" width="{size}" height="{size}">'
+            f'<rect width="{size}" height="{size}" fill="{PAPER}"/>'
+            f'<g transform="translate({x:.1f},{y:.1f}) scale({scale:.4f}) translate(-8,-24)">{figure()}</g></svg>')
+
+
 if __name__ == '__main__':
     (ASSETS / 'logo.svg').write_text(logo(figure()), newline='\n')
     (ASSETS / 'logo-dark.svg').write_text(logo(figure(INK_DARK)), newline='\n')
@@ -127,3 +135,8 @@ if __name__ == '__main__':
     og.write_text(og_image(), newline='\n')
     subprocess.run([INKSCAPE, str(og), '--export-type=png', '--export-width=1280',
                     f'--export-filename={ASSETS / "og-image.png"}'], check=True, capture_output=True)
+    svg = ASSETS / 'src' / 'icon.svg'
+    svg.write_text(icon(), newline='\n')
+    subprocess.run([INKSCAPE, str(svg), '--export-type=png', '--export-width=1024',
+                    f'--export-filename={ASSETS.parent / "plugins" / "unmean" / ".claude-plugin" / "icon.png"}'],
+                   check=True, capture_output=True)

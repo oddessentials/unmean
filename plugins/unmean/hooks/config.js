@@ -5,7 +5,7 @@ const MODES = new Set(['remove', 'mask'])
 export function parseConfigText(text) {
   let raw
   try {
-    raw = JSON.parse(String(text).replace(/^﻿/, ''))
+    raw = JSON.parse(String(text).replace(/^\uFEFF/, ''))
   } catch (err) {
     return { config: { ...DEFAULT_CONFIG }, error: `invalid JSON (${err.message})` }
   }
