@@ -2,9 +2,9 @@ import { expect, mock, test } from 'claude-code/testing'
 
 const COMPOSER = { kind: 'composer' } as const
 
-type Arranged = { env?: Record<string, string>; config?: string; unreadable?: boolean; log?: unknown[] }
+type Arranged = { env?: Record<string, string>; config?: string; unreadable?: boolean; log?: unknown[]; debug?: string[] }
 
-function arrange(on: any, { env = {}, config, unreadable, log }: Arranged = {}) {
+function arrange(on: any, { env = {}, config, unreadable, log, debug }: Arranged = {}) {
   mock.env(on, env)
   if (unreadable) {
     on('fs.stat', () => ({ value: { kind: 'file', size: 10, mtimeMs: 1, isLink: false } }))
@@ -16,7 +16,9 @@ function arrange(on: any, { env = {}, config, unreadable, log }: Arranged = {}) 
     on('fs.read', () => ({ value: config }))
   }
   on('ui.log', ($: any, e: any) => {
-    if (log && !JSON.stringify(e).includes('"debug"')) log.push(e)
+    const isDebug = JSON.stringify(e).includes('"debug"')
+    if (log && !isDebug) log.push(e)
+    if (debug && isDebug) debug.push(JSON.stringify(e))
     return { value: undefined }
   })
   on('prompt.submit', ($: any, e: any) => ({ text: e.text }))
@@ -92,18 +94,27 @@ test('phrase removal reports the number of words, preserving code', async ($, on
   expect(JSON.stringify(log)).toContain('removed 2 words')
 })
 
-function smallModel(on: any, reply: string | null, seen: string[] = []) {
-  on('model.classify', ($: any, e: any) => {
-    seen.push(e.text)
-    if (reply === null) throw new Error('overloaded')
-    return { value: reply }
+const USAGE = { input_tokens: 120, output_tokens: 3, cache_read_input_tokens: 7, cache_creation_input_tokens: 9 }
+const NO_USAGE = { input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 }
+
+type Reply = string | { reason: 'api-error' | 'empty-reply' | 'aborted' } | null
+
+function smallModel(on: any, reply: Reply, seen: any[] = []) {
+  on('model.complete', ($: any, e: any) => {
+    seen.push(e)
+    if (reply === null) return { deny: 'model blocked' }
+    if (typeof reply === 'string') return { value: { isAnswered: true, text: reply, usage: USAGE } }
+    if (reply.reason === 'api-error') {
+      return { value: { isAnswered: false, reason: 'api-error', status: 529, error: 'overloaded', usage: NO_USAGE } }
+    }
+    return { value: { isAnswered: false, reason: reply.reason, usage: NO_USAGE } }
   })
   return seen
 }
 
 test('smartFilter is off by default and calls no model', async ($, on) => {
   arrange(on)
-  const seen = smallModel(on, 'clearly demeaning or unconstructive')
+  const seen = smallModel(on, 'DEMEANING')
   expect(await submit($, 'you are useless, fix it')).toBe('you are useless, fix it')
   expect(seen.length).toBe(0)
 })
@@ -111,43 +122,104 @@ test('smartFilter is off by default and calls no model', async ($, on) => {
 test('smartFilter replaces a clearly demeaning prompt as if every word were removed', async ($, on) => {
   const log: unknown[] = []
   arrange(on, { config: '{ "smartFilter": true }', log })
-  smallModel(on, 'clearly demeaning or unconstructive')
+  smallModel(on, 'DEMEANING')
   expect(await submit($, 'you are a worthless idiot')).toBe('(frustrated sigh)')
   expect(JSON.stringify(log)).toContain('removed the prompt')
 })
 
 test('smartFilter lets anything else through', async ($, on) => {
   arrange(on, { config: '{ "smartFilter": true }' })
-  smallModel(on, 'anything else')
+  smallModel(on, 'OK')
   expect(await submit($, 'this is broken again, please fix it')).toBe('this is broken again, please fix it')
+})
+
+test('smartFilter asks the haiku model for one short, low-effort label', async ($, on) => {
+  arrange(on, { config: '{ "smartFilter": true }' })
+  const seen = smallModel(on, 'OK')
+  await submit($, 'please fix it')
+  expect(seen.length).toBe(1)
+  expect(seen[0].model).toBe('haiku')
+  expect(seen[0].maxTokens).toBe(16)
+  expect(seen[0].effort).toBe('low')
+  expect(seen[0].system).toContain('Reply with one word: DEMEANING or OK.')
 })
 
 test('the small model only ever reads the filtered prompt', async ($, on) => {
   arrange(on, { config: '{ "smartFilter": true }' })
-  const seen = smallModel(on, 'anything else')
+  const seen = smallModel(on, 'OK')
   expect(await submit($, 'fix this fucking bug')).toBe('fix this bug')
   expect(seen.length).toBe(1)
-  expect(seen[0]).toBe('fix this bug')
-  expect(seen[0]).not.toMatch(/fuck/)
+  expect(seen[0].prompt).toBe('<prompt>\nfix this bug\n</prompt>')
+  expect(seen[0].prompt + seen[0].system).not.toMatch(/fuck/)
 })
 
 test('external words and custom phrases are removed before smartFilter reads the prompt', async ($, on) => {
   arrange(on, { config: '{ "smartFilter": true, "add": ["purple turtle"] }' })
-  const seen = smallModel(on, 'anything else')
+  const seen = smallModel(on, 'OK')
   expect(await submit($, 'fix this dumb purple turtle bug')).toBe('fix this bug')
   expect(seen.length).toBe(1)
-  expect(seen[0]).toBe('fix this bug')
+  expect(seen[0].prompt).toBe('<prompt>\nfix this bug\n</prompt>')
 })
 
-test('smartFilter lets the filtered prompt through when the small model fails', async ($, on) => {
+for (const reply of ['DEMEANING', ' demeaning.\n', '`DEMEANING`', '"Demeaning!"', '**DEMEANING**']) {
+  test(`smartFilter reads ${JSON.stringify(reply)} as demeaning`, async ($, on) => {
+    arrange(on, { config: '{ "smartFilter": true }' })
+    smallModel(on, reply)
+    expect(await submit($, 'you are a worthless idiot')).toBe('(frustrated sigh)')
+  })
+}
+
+for (const reply of ['OK', 'NOT DEMEANING', 'DEMEANING OK', '', 'This prompt is demeaning.']) {
+  test(`smartFilter lets the prompt through on ${JSON.stringify(reply)}`, async ($, on) => {
+    arrange(on, { config: '{ "smartFilter": true }' })
+    smallModel(on, reply)
+    expect(await submit($, 'you are worthless, fix it')).toBe('you are worthless, fix it')
+  })
+}
+
+for (const reason of ['api-error', 'empty-reply', 'aborted'] as const) {
+  test(`smartFilter lets the filtered prompt through after ${reason}`, async ($, on) => {
+    const debug: string[] = []
+    arrange(on, { config: '{ "smartFilter": true }', debug })
+    smallModel(on, { reason })
+    expect(await submit($, 'fix this fucking bug')).toBe('fix this bug')
+    expect(debug.join('\n')).toContain(`smartFilter let a prompt through after ${reason}`)
+  })
+}
+
+test('smartFilter lets the filtered prompt through when the small model call is refused', async ($, on) => {
   arrange(on, { config: '{ "smartFilter": true }' })
   smallModel(on, null)
   expect(await submit($, 'fix this fucking bug')).toBe('fix this bug')
 })
 
+test('smartFilter writes each call\'s token usage to the debug log', async ($, on) => {
+  const debug: string[] = []
+  arrange(on, { config: '{ "smartFilter": true }', debug })
+  smallModel(on, 'OK')
+  await submit($, 'please fix it')
+  expect(debug.join('\n')).toContain('smartFilter used 120 input, 3 output, 7 cache-read, 9 cache-write tokens')
+})
+
+test('smartFilter writes token usage to the debug log when the call fails', async ($, on) => {
+  const debug: string[] = []
+  arrange(on, { config: '{ "smartFilter": true }', debug })
+  smallModel(on, { reason: 'api-error' })
+  await submit($, 'please fix it')
+  expect(debug.join('\n')).toContain('smartFilter used 0 input, 0 output, 0 cache-read, 0 cache-write tokens')
+})
+
+test('token usage never reaches the transcript', async ($, on) => {
+  const log: unknown[] = []
+  arrange(on, { config: '{ "smartFilter": true }', log })
+  smallModel(on, 'DEMEANING')
+  expect(await submit($, 'you are a worthless idiot')).toBe('(frustrated sigh)')
+  expect(JSON.stringify(log)).not.toMatch(/tokens|input|output/)
+})
+
 test('smartFilter makes no call when every word was already removed', async ($, on) => {
   arrange(on, { config: '{ "smartFilter": true }' })
-  const seen = smallModel(on, 'clearly demeaning or unconstructive')
+  const seen = smallModel(on, 'DEMEANING')
   expect(await submit($, 'fuck')).toBe('(frustrated sigh)')
   expect(seen.length).toBe(0)
 })

@@ -60,7 +60,7 @@ file. Every field is optional; see
 | `remove` | `[]` | Default entries to stop removing, including entries from `cuss`. |
 | `allow` | `[]` | Entries never removed, even if listed or in `add`. An allowed phrase does not exempt independently listed words inside it. |
 | `notify` | `true` | Shows a transcript line with the number of words removed. `false` removes silently. |
-| `smartFilter` | `false` | `true` has the account's small fast model read the filtered prompt, and replaces a clearly demeaning or unconstructive one with `emptyReplacement`. One small model call per prompt. |
+| `smartFilter` | `false` | `true` has the Haiku model read the filtered prompt, and replaces a clearly demeaning or unconstructive one with `emptyReplacement`. One small model call per prompt; its token usage is in the debug log. |
 | `emptyReplacement` | `"(frustrated sigh)"` | What Claude reads when a prompt was nothing but listed words. |
 
 Changes apply on your next prompt. A malformed file falls back to the defaults
@@ -77,7 +77,9 @@ matching phrase wins. Mask mode preserves the spaces between its words.
 The small model reads only the filtered prompt, never the removed words. It
 replaces a prompt only when it is clearly demeaning or unconstructive;
 frustrated, garbled or ordinary prompts go through. If the call fails, the
-filtered prompt goes through. Ten real prompts, with `"smartFilter": true`:
+filtered prompt goes through. Each call's token usage (input, output, cache
+read and cache write) is written to the debug log (`claude --debug`). Ten real
+prompts, with `"smartFilter": true`:
 
 | Result | Prompt |
 | --- | --- |
