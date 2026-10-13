@@ -10,6 +10,18 @@ forwarding your prompt to Claude, while preserving code snippets and paths.
 > Works in Claude Code only (the CLI and the desktop app's Code tab). It does
 > nothing in claude.ai chat or Cowork.
 
+## Who it's for
+
+Developers who sometimes vent at Claude while they work, and would rather the
+heat stayed out of the conversation. Anthropic's
+[2026 Usage Policy update](https://www.anthropic.com/news/2026-usage-policy-update)
+prohibits "sustained and needless abusive or cruel behavior" toward its models,
+and lets Claude end conversations with persistently abusive users in Claude.ai
+and Claude Code. The policy is meant only for extreme cases, not everyday
+frustration or pushback. unmean keeps the listed words, and with `smartFilter`
+clearly demeaning prompts, from reaching Claude, without interrupting your work.
+It is a courtesy filter, not a compliance tool.
+
 ## Install
 
 **In Claude Code:**
