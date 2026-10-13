@@ -5,6 +5,17 @@ your prompt to Claude, while preserving code snippets and paths.
 
 Made by Odd Essentials, LLC.
 
+## What it is not
+
+unmean is a light filter for a list of words, not a strict one. It does not:
+
+- Catch every spelling of a word (`sh1t`, `f***`, `shiiit`) or anything that
+  only looks like a listed word. It removes the listed words as you normally
+  type them.
+- Stop anyone deliberately getting around it.
+- Tidy the spacing or punctuation left after a word is removed.
+- Check your config for odd entries. Add words in plain letters.
+
 ## Install
 
 ```text
