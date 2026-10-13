@@ -21,14 +21,17 @@ export const DEFAULT_CONFIG = Object.freeze({
 // whole, and a token with anything but letters is never flagged.
 const TOKEN_SOURCE = String.raw`[A-Za-z0-9_]+(?:'[A-Za-z0-9_]+)*`
 
-// Spans the filter never touches: code, URLs, paths, dotted names.
-const PROTECTED = [
-  /```[\s\S]*?(?:```|$)/g, // fenced code, an unclosed fence runs to the end
-  /`[^`\n]+`/g, // inline code
-  /\b[a-z][a-z0-9+.-]*:\/\/\S+/gi, // URLs
-  /\S*[\/\\]\S*/g, // anything path-like
-  /[A-Za-z0-9_$@]+(?:\.[A-Za-z0-9_$@]+)+/g, // obj.prop, file.ext, host.name
-]
+// Spans the filter never touches: fenced and inline code, any whitespace-free
+// run that holds a slash (paths, URLs), and dotted names (obj.prop, file.ext,
+// host.name, user@host.name).
+//
+// Each kind is found in one pass that never re-reads a character, so no shape
+// of input can make a prompt slow to submit. Regexes that scanned from every
+// position once took seconds on a pasted 100 KB blob with no whitespace, long
+// enough for the hook to be skipped and the prompt to go through unfiltered.
+const FENCE = '```'
+const CHUNKS = /\S+/g // whitespace-free runs; each match succeeds at its first try
+const NAME_CHAR = /[A-Za-z0-9_$@]/
 
 // Wrappers that are removed when a removal leaves them empty: ("fuck") → ()
 const PAIRS = { '"': '"', "'": "'", '(': ')', '[': ']', '{': '}', '*': '*' }
@@ -60,19 +63,75 @@ export function isFlagged(token, compiled) {
   return compiled.words.has(norm)
 }
 
-function protectedMask(text) {
-  const mask = new Uint8Array(text.length)
-  for (const re of PROTECTED) {
-    re.lastIndex = 0
-    let m
-    while ((m = re.exec(text)) !== null) {
-      if (m[0].length === 0) {
-        re.lastIndex += 1
-        continue
-      }
-      mask.fill(1, m.index, m.index + m[0].length)
+// From ``` to the next ```; an unclosed fence runs to the end.
+function markFences(text, mask) {
+  let open = text.indexOf(FENCE)
+  while (open !== -1) {
+    const close = text.indexOf(FENCE, open + FENCE.length)
+    if (close === -1) {
+      mask.fill(1, open)
+      return
+    }
+    mask.fill(1, open, close + FENCE.length)
+    open = text.indexOf(FENCE, close + FENCE.length)
+  }
+}
+
+// `code`: a backtick, one or more characters that are neither a backtick nor
+// a newline, and a backtick.
+function markInlineCode(text, mask) {
+  let open = text.indexOf('`')
+  while (open !== -1) {
+    let end = open + 1
+    while (end < text.length && text[end] !== '`' && text[end] !== '\n') end += 1
+    if (end > open + 1 && text[end] === '`') {
+      mask.fill(1, open, end + 1)
+      open = text.indexOf('`', end + 1)
+    } else {
+      open = text.indexOf('`', open + 1)
     }
   }
+}
+
+// Within text[start, end): runs of name characters joined by single dots, with
+// at least one dot and name characters on both sides of every dot.
+function markDottedNames(text, mask, start, end) {
+  let i = start
+  while (i < end) {
+    if (!NAME_CHAR.test(text[i])) {
+      i += 1
+      continue
+    }
+    const from = i
+    let dots = 0
+    while (i < end && NAME_CHAR.test(text[i])) i += 1
+    while (i + 1 < end && text[i] === '.' && NAME_CHAR.test(text[i + 1])) {
+      dots += 1
+      i += 1
+      while (i < end && NAME_CHAR.test(text[i])) i += 1
+    }
+    if (dots > 0) mask.fill(1, from, i)
+  }
+}
+
+// A whitespace-free run with a slash is a path or URL and is protected whole;
+// any other run is searched for dotted names.
+function markChunks(text, mask) {
+  CHUNKS.lastIndex = 0
+  let m
+  while ((m = CHUNKS.exec(text)) !== null) {
+    const start = m.index
+    const end = start + m[0].length
+    if (m[0].includes('/') || m[0].includes('\\')) mask.fill(1, start, end)
+    else markDottedNames(text, mask, start, end)
+  }
+}
+
+function protectedMask(text) {
+  const mask = new Uint8Array(text.length)
+  markFences(text, mask)
+  markInlineCode(text, mask)
+  markChunks(text, mask)
   return mask
 }
 
