@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Claude Code plugin that quietly keeps profanity out of what Claude reads.",
+  "description": "Claude Code plugin that removes profanity from prompts before Claude reads them.",
   "license": "MIT",
   "scripts": {
     "test": "node --test \"tests/**/*.node.test.mjs\" && claude plugin test .",

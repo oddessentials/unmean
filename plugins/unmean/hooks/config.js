@@ -1,18 +1,7 @@
 // Config file parsing for unmean. Pure, like filter.js.
 //
-// The file is JSON. Every key is optional and a bad value falls back to the
-// default rather than disabling the filter:
-//
-// {
-//   "enabled": true,
-//   "mode": "remove",
-//   "maskChar": "*",
-//   "add": ["heck"],
-//   "remove": ["damn"],
-//   "allow": ["cocky"],
-//   "notify": true,
-//   "emptyReplacement": "(frustrated sigh)"
-// }
+// Every key is optional and a bad value falls back to the default rather than
+// disabling the filter. The keys are listed in the README.
 
 import { DEFAULT_CONFIG, normalizeWord } from './filter.js'
 

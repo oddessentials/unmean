@@ -12,13 +12,13 @@ export const DEFAULT_CONFIG = Object.freeze({
   add: Object.freeze([]),
   remove: Object.freeze([]),
   allow: Object.freeze([]),
-  notify: true, // adds a dim transcript line naming the removed words; Claude does not read it
+  notify: true, // adds a dim transcript line with the count of removed words; Claude does not read it
   emptyReplacement: '(frustrated sigh)', // what Claude reads when the whole prompt was profanity
 })
 
 // A token is a run of letters, digits and underscores, with apostrophes allowed
-// inside ("asshole's"). Digits and underscores keep "A55" and snake_case whole,
-// and a token with anything but letters is never flagged.
+// inside ("asshole's"). Digits and underscores keep numbers and snake_case
+// whole, and a token with anything but letters is never flagged.
 const TOKEN_SOURCE = String.raw`[A-Za-z0-9_]+(?:'[A-Za-z0-9_]+)*`
 
 // Spans the filter never touches: code, URLs, paths, dotted names.

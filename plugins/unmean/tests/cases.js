@@ -20,7 +20,7 @@ export const CASES = [
   { name: 'markdown emphasis around a removed word goes too', input: 'this is **fucking** broken', expected: 'this is broken' },
   { name: 'hyphenated compounds', input: 'that dumb-ass approach', expected: 'that dumb approach' },
   { name: 'possessives', input: "the asshole's code", expected: 'the code' },
-  { name: 'common endings', input: 'he bitched about the shitty tests', expected: 'he about the tests' },
+  { name: 'listed forms of a word', input: 'he bitched about the shitty tests', expected: 'he about the tests' },
   { name: 'wrappers left empty are removed too', input: '(fuck) that', expected: 'that' },
   { name: 'a question keeps its mark', input: 'What the fuck is this?', expected: 'What the is this?' },
   { name: 'several words in one prompt', input: 'fix this fucking bug, you useless shit', expected: 'fix this bug, you useless' },
@@ -50,7 +50,7 @@ export const FLAGGED = [
   'FUCK', 'Fucked', 'fuckin', 'bitches', 'shitty', 'crappy', "asshole's", 'WTF',
 ]
 
-// Spellings the matcher must leave alone.
+// Tokens the matcher must leave alone.
 export const NOT_FLAGGED = [
   'Scunthorpe', 'assess', 'assessed', 'assesses', 'assessment', 'classic', 'bass', 'passes',
   'shiitake', 'cocktail', 'assassin', 'as', 'dickens', 'asset', 'hello', 'damning',
