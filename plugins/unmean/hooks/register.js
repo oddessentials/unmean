@@ -39,7 +39,14 @@ async function loadConfig($, path) {
   if (configCache && configCache.path === path && configCache.mtimeMs === stat.mtimeMs) {
     return configCache.compiled
   }
-  const text = await $.fs.read(path)
+  let text
+  try {
+    text = await $.fs.read(path)
+  } catch (err) {
+    $.ui.log(`${PLUGIN}: could not read ${path}, using defaults: ${err && err.message ? err.message : err}`, { to: 'debug' })
+    configCache = null
+    return DEFAULT_COMPILED
+  }
   const { config, error } = parseConfigText(text)
   if (error) $.ui.log(`${PLUGIN}: problem in ${path}: ${error}`, { to: 'debug' })
   const compiled = compile(config)
