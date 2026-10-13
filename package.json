@@ -1,0 +1,24 @@
+{
+  "name": "unmean",
+  "private": true,
+  "type": "module",
+  "description": "A Claude Code chaperone to filter out unconstructive and demeaning prompts without interrupting your workflow.",
+  "license": "MIT",
+  "scripts": {
+    "test": "npm run wordlist:check && npm run test:node && npm run test:claude",
+    "test:node": "node --test \"plugins/unmean/tests/**/*.node.test.mjs\"",
+    "test:claude": "claude plugin test plugins/unmean",
+    "validate": "claude plugin validate plugins/unmean",
+    "wordlist": "node scripts/cuss-words.mjs",
+    "wordlist:check": "node scripts/cuss-words.mjs --check"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
+    "@semantic-release/changelog": "7.0.0",
+    "@semantic-release/exec": "7.1.0",
+    "@semantic-release/git": "11.0.1",
+    "cuss": "2.2.0",
+    "semantic-release": "25.0.9"
+  }
+}

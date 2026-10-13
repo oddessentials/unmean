@@ -112,14 +112,12 @@ unmean is a light filter for a list of words, not a strict one. It does not:
 ## Development
 
 ```bash
-cd plugins/unmean
 npm ci --ignore-scripts
-node --test "tests/**/*.node.test.mjs"
-claude plugin test .
-claude plugin validate .
+npm test
+npm run validate
 ```
 
-`hooks/cuss-words.js` is generated from the pinned `cuss` dev dependency. To
+`plugins/unmean/hooks/cuss-words.js` is generated from the pinned `cuss` dev dependency. To
 update it, run `npm install --save-exact --save-dev cuss@<version> --ignore-scripts`,
 then `npm run wordlist`, and run the tests. Words to keep out of it go in the
 `ALLOW` list in `scripts/cuss-words.mjs`.
