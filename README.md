@@ -134,5 +134,5 @@ MIT. See [LICENSE](LICENSE).
   <br>
   <em>Made for Claude Code with Claude Code</em>
   <br>
-  Made by Odd Essentials, LLC. · <a href="https://oddessentials.ai/donate/">Donate</a>
+  by Odd Essentials, LLC. · <a href="https://oddessentials.ai/donate/">Donate</a>
 </p>
