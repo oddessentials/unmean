@@ -2,11 +2,14 @@ import { expect, mock, test } from 'claude-code/testing'
 
 const COMPOSER = { kind: 'composer' } as const
 
-type Arranged = { env?: Record<string, string>; config?: string; log?: unknown[] }
+type Arranged = { env?: Record<string, string>; config?: string; unreadable?: boolean; log?: unknown[] }
 
-function arrange(on: any, { env = {}, config, log }: Arranged = {}) {
+function arrange(on: any, { env = {}, config, unreadable, log }: Arranged = {}) {
   mock.env(on, env)
-  if (config === undefined) {
+  if (unreadable) {
+    on('fs.stat', () => ({ value: { kind: 'file', size: 10, mtimeMs: 1, isLink: false } }))
+    on('fs.read', () => ({ deny: 'EACCES: permission denied' }))
+  } else if (config === undefined) {
     on('fs.stat', () => ({ deny: 'ENOENT: no such file or directory' }))
   } else {
     on('fs.stat', () => ({ value: { kind: 'file', size: config.length, mtimeMs: 1, isLink: false } }))
@@ -51,6 +54,11 @@ test('the config file can add and remove words', async ($, on) => {
 
 test('a malformed config file falls back to the defaults', async ($, on) => {
   arrange(on, { config: '{ this is not json' })
+  expect(await submit($, 'fix this fucking bug')).toBe('fix this bug')
+})
+
+test('an unreadable config file falls back to the defaults', async ($, on) => {
+  arrange(on, { unreadable: true })
   expect(await submit($, 'fix this fucking bug')).toBe('fix this bug')
 })
 
