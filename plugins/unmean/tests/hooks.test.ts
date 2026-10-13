@@ -85,6 +85,13 @@ test('"notify": false removes silently', async ($, on) => {
   expect(log.length).toBe(0)
 })
 
+test('phrase removal reports the number of words, preserving code', async ($, on) => {
+  const log: unknown[] = []
+  arrange(on, { config: '{ "add": ["purple turtle"] }', log })
+  expect(await submit($, 'a purple turtle near `purple turtle`')).toBe('a near `purple turtle`')
+  expect(JSON.stringify(log)).toContain('removed 2 words')
+})
+
 function smallModel(on: any, reply: string | null, seen: string[] = []) {
   on('model.classify', ($: any, e: any) => {
     seen.push(e.text)
@@ -122,6 +129,14 @@ test('the small model only ever reads the filtered prompt', async ($, on) => {
   expect(seen.length).toBe(1)
   expect(seen[0]).toBe('fix this bug')
   expect(seen[0]).not.toMatch(/fuck/)
+})
+
+test('external words and custom phrases are removed before smartFilter reads the prompt', async ($, on) => {
+  arrange(on, { config: '{ "smartFilter": true, "add": ["purple turtle"] }' })
+  const seen = smallModel(on, 'anything else')
+  expect(await submit($, 'fix this dumb purple turtle bug')).toBe('fix this bug')
+  expect(seen.length).toBe(1)
+  expect(seen[0]).toBe('fix this bug')
 })
 
 test('smartFilter lets the filtered prompt through when the small model fails', async ($, on) => {

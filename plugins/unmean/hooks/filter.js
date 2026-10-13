@@ -21,7 +21,7 @@ const NAME_CHAR = /[A-Za-z0-9_$@]/
 const PAIRS = { '"': '"', "'": "'", '(': ')', '[': ']', '{': '}', '*': '*' }
 
 export function normalizeWord(word) {
-  return String(word).toLowerCase().replace(/[^a-z]/g, '')
+  return String(word).toLowerCase().replace(/[^a-z\s]/g, '').trim().replace(/\s+/g, ' ')
 }
 
 export function compile(config = DEFAULT_CONFIG) {
@@ -31,7 +31,16 @@ export function compile(config = DEFAULT_CONFIG) {
   const words = new Set(
     [...DEFAULT_WORDS, ...(cfg.add ?? [])].map(normalizeWord).filter(w => w && !removed.has(w) && !allow.has(w)),
   )
-  return { ...cfg, words, allow }
+  const phrases = new Map()
+  for (const word of words) {
+    if (!word.includes(' ')) continue
+    const parts = word.split(' ')
+    const candidates = phrases.get(parts[0]) ?? []
+    candidates.push(parts)
+    phrases.set(parts[0], candidates)
+  }
+  for (const candidates of phrases.values()) candidates.sort((a, b) => b.length - a.length)
+  return { ...cfg, words, allow, phrases }
 }
 
 export function isFlagged(token, compiled) {
@@ -107,20 +116,35 @@ function protectedMask(text) {
 export function findMatches(text, compiled) {
   const mask = protectedMask(text)
   const matches = []
-  const tokens = new RegExp(TOKEN_SOURCE, 'g')
-  let m
-  while ((m = tokens.exec(text)) !== null) {
-    const start = m.index
-    const end = start + m[0].length
-    let isProtected = false
-    for (let i = start; i < end; i += 1) {
-      if (mask[i]) {
-        isProtected = true
-        break
+  const tokens = Array.from(text.matchAll(new RegExp(TOKEN_SOURCE, 'g')), m => ({
+    start: m.index,
+    end: m.index + m[0].length,
+    token: m[0],
+    normalized: m[0].toLowerCase().replace(/'/g, ''),
+    protected: mask.subarray(m.index, m.index + m[0].length).includes(1),
+  }))
+  for (let i = 0; i < tokens.length; i += 1) {
+    const first = tokens[i]
+    if (first.protected) continue
+    let last = isFlagged(first.token, compiled) ? i : -1
+    for (const parts of compiled.phrases.get(first.normalized) ?? []) {
+      if (i + parts.length > tokens.length) continue
+      let j = 1
+      for (; j < parts.length; j += 1) {
+        const next = tokens[i + j]
+        const gap = text.slice(tokens[i + j - 1].end, next.start)
+        if (next.protected || next.normalized !== parts[j] || !/^[ \t]+$/.test(gap)) break
+      }
+      if (j === parts.length) {
+        last = i + parts.length - 1
+        break // Longest phrase wins; its words are not removed twice.
       }
     }
-    if (isProtected) continue
-    if (isFlagged(m[0], compiled)) matches.push({ start, end, token: m[0] })
+    if (last === -1) continue
+    const start = first.start
+    const end = tokens[last].end
+    matches.push({ start, end, token: text.slice(start, end) })
+    i = last
   }
   return matches
 }
@@ -171,7 +195,7 @@ export function clean(text, compiled = compile()) {
     const ch = Array.from(String(compiled.maskChar || '*'))[0] ?? '*'
     for (let i = matches.length - 1; i >= 0; i -= 1) {
       const { start, end } = matches[i]
-      out = out.slice(0, start) + ch.repeat(end - start) + out.slice(end)
+      out = out.slice(0, start) + out.slice(start, end).replace(/[^ \t]/g, () => ch) + out.slice(end)
     }
   } else {
     for (let i = matches.length - 1; i >= 0; i -= 1) {
@@ -180,5 +204,6 @@ export function clean(text, compiled = compile()) {
     out = out.replace(/^(?:[ \t]*\n)+/, '').replace(/\s+$/, '')
     if (out === '') out = String(compiled.emptyReplacement ?? '')
   }
-  return { text: out, changed: out !== text, count: matches.length, matches }
+  const count = matches.reduce((total, match) => total + match.token.split(/[ \t]+/).length, 0)
+  return { text: out, changed: out !== text, count, matches }
 }

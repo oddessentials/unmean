@@ -1,3 +1,6 @@
+// Claude's module loader requires relative imports, including installed packages.
+import { cuss } from '../node_modules/cuss/index.js'
+
 export const DEFAULT_WORDS = [
   'fuck', 'fucks', 'fucked', 'fucking', 'fuckin', 'fucker', 'fuckers',
   'motherfucker', 'motherfuckers', 'motherfucking', 'motherfuckin',
@@ -19,4 +22,7 @@ export const DEFAULT_WORDS = [
   'tosser', 'tossers', 'slut', 'sluts', 'whore', 'whores',
   'douche', 'douchebag', 'douchebags', 'scumbag', 'scumbags',
   'wtf', 'stfu', 'omfg', 'lmfao', 'ffs', 'mofo',
+  ...Object.entries(cuss)
+    .filter(([word, rating]) => rating === 2 && /^[a-z]+(?: [a-z]+)*$/.test(word))
+    .map(([word]) => word),
 ]

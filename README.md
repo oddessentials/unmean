@@ -5,6 +5,9 @@
 A Claude Code chaperone to filter out unconstructive and demeaning prompts
 without interrupting your workflow. It removes or masks listed bad words before
 forwarding your prompt to Claude, while preserving code snippets and paths.
+The built-in list is supplemented by high-confidence English words and phrases
+from [`cuss`](https://github.com/words/cuss), including racial and ethnic slurs.
+The external dictionary stays in the dependency, out of this repository.
 
 > [!NOTE]
 > Works in Claude Code only (the CLI and the desktop app's Code tab). It does
@@ -40,8 +43,15 @@ claude plugin install unmean@odd-essentials
 **From a clone**, to try it for one session:
 
 ```bash
-claude --plugin-dir ./unmean/plugins/unmean
+cd unmean/plugins/unmean
+npm ci --ignore-scripts
+claude --plugin-dir .
 ```
+
+Marketplace installs let Claude Code install the pinned dependency automatically;
+Node.js and npm must be available for that installation. Local clones need the
+`npm ci` step above. Filtering uses the installed data locally, with no dictionary
+downloads per prompt.
 
 ## Configuration
 
@@ -54,15 +64,21 @@ file. Every field is optional; see
 | `enabled` | `true` | `false` turns the filter off. |
 | `mode` | `"remove"` | `"mask"` masks each word with `maskChar` instead of removing it. |
 | `maskChar` | `"*"` | The character used in `"mask"` mode. |
-| `add` | `[]` | Extra words to remove, in plain letters. List every form you want caught (`heck`, `hecking`). Other characters are dropped, so `a$$` would remove every `a`. |
-| `remove` | `[]` | Default words to stop removing. |
-| `allow` | `[]` | Words never removed, even if listed or in `add`. |
+| `add` | `[]` | Extra words or phrases to remove, in plain letters separated by spaces. List every form you want caught (`heck`, `hecking`). Other characters are dropped, so `a$$` would remove every `a`. |
+| `remove` | `[]` | Default entries to stop removing, including entries from `cuss`. |
+| `allow` | `[]` | Entries never removed, even if listed or in `add`. An allowed phrase does not exempt independently listed words inside it. |
 | `notify` | `true` | Shows a transcript line with the number of words removed. `false` removes silently. |
 | `smartFilter` | `false` | `true` has the account's small fast model read the filtered prompt, and replaces a clearly demeaning or unconstructive one with `emptyReplacement`. One small model call per prompt. |
 | `emptyReplacement` | `"(frustrated sigh)"` | What Claude reads when a prompt was nothing but listed words. |
 
 Changes apply on your next prompt. A malformed file falls back to the defaults
 and logs the reason to the debug log (`claude --debug`).
+
+Only `cuss` entries rated **2** (likely offensive, unlikely in clean text) and
+made of plain English letters and spaces are included. This rating measures
+ambiguity, not severity. Phrases match whole words separated by spaces or tabs
+on the same line; they do not cross punctuation, code, or paths. The longest
+matching phrase wins. Mask mode preserves the spaces between its words.
 
 ### smartFilter
 
@@ -105,10 +121,16 @@ unmean is a light filter for a list of words, not a strict one. It does not:
 
 ```bash
 cd plugins/unmean
+npm ci --ignore-scripts
 node --test "tests/**/*.node.test.mjs"
 claude plugin test .
 claude plugin validate .
 ```
+
+`cuss` is pinned in `package.json` and `package-lock.json`. To update it, install
+an explicit version with `npm install --save-exact cuss@<version> --ignore-scripts`
+and run the tests. Keep both files in the plugin directory so marketplace installs
+can resolve the dependency. Its data and MIT license stay in ignored `node_modules/`.
 
 ## License
 

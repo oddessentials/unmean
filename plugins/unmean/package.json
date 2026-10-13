@@ -10,5 +10,8 @@
     "test:node": "node --test \"tests/**/*.node.test.mjs\"",
     "test:claude": "claude plugin test .",
     "validate": "claude plugin validate ."
+  },
+  "dependencies": {
+    "cuss": "2.2.0"
   }
 }
