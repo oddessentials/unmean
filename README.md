@@ -134,5 +134,7 @@ MIT. See [LICENSE](LICENSE).
     <img src="assets/logo.svg" alt="unmean logo: a meditating figure holding a coral heart" width="120">
   </picture>
   <br>
+  <em>Made for Claude Code with Claude Code</em>
+  <br>
   Made by Odd Essentials, LLC. · <a href="https://oddessentials.ai/donate/">Donate</a>
 </p>
