@@ -5,6 +5,7 @@ const PLUGIN = 'unmean'
 const CONFIG_FILE = 'unmean.json'
 const OFF_VALUES = new Set(['0', 'off', 'false', 'no'])
 const USER_ORIGINS = new Set(['composer', 'bridge', 'sdk', 'slack-ping', 'unclassified'])
+const SMART_LABELS = ['clearly demeaning or unconstructive', 'anything else']
 
 const DEFAULT_COMPILED = compile(DEFAULT_CONFIG)
 let envCache = null
@@ -54,6 +55,15 @@ async function loadConfig($, path) {
   return compiled
 }
 
+async function isDemeaning($, text) {
+  try {
+    return (await $.model.classify(text, SMART_LABELS)) === SMART_LABELS[0]
+  } catch (err) {
+    $.ui.log(`${PLUGIN}: smartFilter let a prompt through after an error: ${err && err.message ? err.message : err}`, { to: 'debug' })
+    return false
+  }
+}
+
 export function register(on) {
   on('prompt.submit', async ($, e, next) => {
     let cleaned
@@ -64,10 +74,17 @@ export function register(on) {
       const compiled = await loadConfig($, env.path)
       if (!compiled.enabled) return next(e)
       const result = clean(e.text, compiled)
-      if (!result.changed) return next(e)
-      $.ui.log(`${PLUGIN}: removed ${result.count} word(s) before Claude read the prompt`, { to: 'debug' })
-      if (compiled.notify) $.ui.log(`removed ${result.count} ${result.count === 1 ? 'word' : 'words'}`)
       cleaned = result.text
+      if (result.changed) {
+        $.ui.log(`${PLUGIN}: removed ${result.count} word(s) before Claude read the prompt`, { to: 'debug' })
+        if (compiled.notify) $.ui.log(`removed ${result.count} ${result.count === 1 ? 'word' : 'words'}`)
+      }
+      if (compiled.smartFilter && cleaned !== compiled.emptyReplacement && (await isDemeaning($, cleaned))) {
+        $.ui.log(`${PLUGIN}: smartFilter removed a demeaning prompt`, { to: 'debug' })
+        if (compiled.notify) $.ui.log('removed the prompt')
+        cleaned = compiled.emptyReplacement
+      }
+      if (cleaned === e.text) return next(e)
     } catch (err) {
       const why = err && err.message ? err.message : String(err)
       $.ui.log(`${PLUGIN}: left a prompt untouched after an error: ${why}`, { to: 'debug' })

@@ -84,3 +84,55 @@ test('"notify": false removes silently', async ($, on) => {
   expect(await submit($, 'fix this damn bug')).toBe('fix this bug')
   expect(log.length).toBe(0)
 })
+
+function smallModel(on: any, reply: string | null, seen: string[] = []) {
+  on('model.classify', ($: any, e: any) => {
+    seen.push(e.text)
+    if (reply === null) throw new Error('overloaded')
+    return { value: reply }
+  })
+  return seen
+}
+
+test('smartFilter is off by default and calls no model', async ($, on) => {
+  arrange(on)
+  const seen = smallModel(on, 'clearly demeaning or unconstructive')
+  expect(await submit($, 'you are useless, fix it')).toBe('you are useless, fix it')
+  expect(seen.length).toBe(0)
+})
+
+test('smartFilter replaces a clearly demeaning prompt as if every word were removed', async ($, on) => {
+  const log: unknown[] = []
+  arrange(on, { config: '{ "smartFilter": true }', log })
+  smallModel(on, 'clearly demeaning or unconstructive')
+  expect(await submit($, 'you are a worthless idiot')).toBe('(frustrated sigh)')
+  expect(JSON.stringify(log)).toContain('removed the prompt')
+})
+
+test('smartFilter lets anything else through', async ($, on) => {
+  arrange(on, { config: '{ "smartFilter": true }' })
+  smallModel(on, 'anything else')
+  expect(await submit($, 'this is broken again, please fix it')).toBe('this is broken again, please fix it')
+})
+
+test('the small model only ever reads the filtered prompt', async ($, on) => {
+  arrange(on, { config: '{ "smartFilter": true }' })
+  const seen = smallModel(on, 'anything else')
+  expect(await submit($, 'fix this fucking bug')).toBe('fix this bug')
+  expect(seen.length).toBe(1)
+  expect(seen[0]).toBe('fix this bug')
+  expect(seen[0]).not.toMatch(/fuck/)
+})
+
+test('smartFilter lets the filtered prompt through when the small model fails', async ($, on) => {
+  arrange(on, { config: '{ "smartFilter": true }' })
+  smallModel(on, null)
+  expect(await submit($, 'fix this fucking bug')).toBe('fix this bug')
+})
+
+test('smartFilter makes no call when every word was already removed', async ($, on) => {
+  arrange(on, { config: '{ "smartFilter": true }' })
+  const seen = smallModel(on, 'clearly demeaning or unconstructive')
+  expect(await submit($, 'fuck')).toBe('(frustrated sigh)')
+  expect(seen.length).toBe(0)
+})

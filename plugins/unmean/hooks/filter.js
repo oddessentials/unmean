@@ -8,6 +8,7 @@ export const DEFAULT_CONFIG = Object.freeze({
   remove: Object.freeze([]),
   allow: Object.freeze([]),
   notify: true,
+  smartFilter: false,
   emptyReplacement: '(frustrated sigh)',
 })
 
