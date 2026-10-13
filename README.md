@@ -32,7 +32,7 @@ file. Every field is optional; see
 | `enabled` | `true` | `false` turns the filter off. |
 | `mode` | `"remove"` | `"mask"` masks each word with `maskChar` instead of removing it. |
 | `maskChar` | `"*"` | The character used in `"mask"` mode. |
-| `add` | `[]` | Extra words to remove. List every form you want caught (`heck`, `hecking`). |
+| `add` | `[]` | Extra words to remove, in plain letters. List every form you want caught (`heck`, `hecking`). Other characters are dropped, so `a$$` would remove every `a`. |
 | `remove` | `[]` | Default words to stop removing. |
 | `allow` | `[]` | Words never removed, even if listed or in `add`. |
 | `notify` | `true` | Shows a transcript line with the number of words removed. `false` removes silently. |
