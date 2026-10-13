@@ -1,7 +1,7 @@
 {
   "name": "unmean",
   "displayName": "Unmean",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A Claude Code chaperone to filter out unconstructive and demeaning prompts without interrupting your workflow.",
   "author": {
     "name": "Odd Essentials, LLC.",
