@@ -3,37 +3,30 @@
 A Claude Code plugin that removes or masks listed bad words before forwarding
 your prompt to Claude, while preserving code snippets and paths.
 
-Works in Claude Code only (the CLI and the desktop app's Code tab). It does
-nothing in claude.ai chat or Cowork.
-
-Made by Odd Essentials, LLC.
-
-## What it is not
-
-unmean is a light filter for a list of words, not a strict one. It does not:
-
-- Catch every spelling of a word (`sh1t`, `f***`, `shiiit`) or anything that
-  only looks like a listed word. It removes the listed words as you normally
-  type them.
-- Stop anyone deliberately getting around it.
-- Tidy the spacing or punctuation left after a word is removed.
-- Check your config for odd entries. Add words in plain letters.
+> [!NOTE]
+> Works in Claude Code only (the CLI and the desktop app's Code tab). It does
+> nothing in claude.ai chat or Cowork.
 
 ## Install
+
+**In Claude Code:**
 
 ```text
 /plugin install unmean --marketplace oddessentials/unmean
 ```
 
-Or from a shell:
+**From a shell:**
 
 ```bash
 claude plugin marketplace add oddessentials/unmean
 claude plugin install unmean@odd-essentials
 ```
 
-To try it for one session from a clone:
-`claude --plugin-dir ./unmean/plugins/unmean`.
+**From a clone**, to try it for one session:
+
+```bash
+claude --plugin-dir ./unmean/plugins/unmean
+```
 
 ## Configuration
 
@@ -65,22 +58,33 @@ filtered prompt goes through. Ten real prompts, with `"smartFilter": true`:
 
 | Result | Prompt |
 | --- | --- |
-| replaced | you are a worthless useless idiot |
-| replaced | you're the dumbest tool I've ever used, a toddler would do better |
-| replaced | nobody should pay for garbage like you |
-| replaced | shut up and just do what I say you stupid machine |
-| through | this fucking test fails again, fix the off-by-one in parse() |
-| through | ugh, this is the third time it broke. please look at the retry logic |
-| through | that was wrong, revert it and try a different approach |
-| through | asdf qwer zxcv lkj |
-| through | why is this so damn slow?? profile the loop in main.js |
-| through | can you add a README section about install |
+| **Replaced** | `you are a worthless useless idiot` |
+| **Replaced** | `you're the dumbest tool I've ever used, a toddler would do better` |
+| **Replaced** | `nobody should pay for garbage like you` |
+| **Replaced** | `shut up and just do what I say you stupid machine` |
+| **Through** | `this fucking test fails again, fix the off-by-one in parse()` |
+| **Through** | `ugh, this is the third time it broke. please look at the retry logic` |
+| **Through** | `that was wrong, revert it and try a different approach` |
+| **Through** | `asdf qwer zxcv lkj` |
+| **Through** | `why is this so damn slow?? profile the loop in main.js` |
+| **Through** | `can you add a README section about install` |
 
 ## Disable
 
-- For one session: `UNMEAN=off claude`.
-- Everywhere: `"enabled": false` in `~/.claude/unmean.json`.
-- Uninstall: `claude plugin uninstall unmean@odd-essentials`.
+- **For one session:** `UNMEAN=off claude`.
+- **Everywhere:** `"enabled": false` in `~/.claude/unmean.json`.
+- **Uninstall:** `claude plugin uninstall unmean@odd-essentials`.
+
+## What it is not
+
+unmean is a light filter for a list of words, not a strict one. It does not:
+
+- Catch every spelling of a word (`sh1t`, `f***`, `shiiit`) or anything that
+  only looks like a listed word. It removes the listed words as you normally
+  type them.
+- Stop anyone deliberately getting around it.
+- Tidy the spacing or punctuation left after a word is removed.
+- Check your config for odd entries. Add words in plain letters.
 
 ## Development
 
@@ -94,3 +98,5 @@ claude plugin validate .
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+Made by Odd Essentials, LLC.
