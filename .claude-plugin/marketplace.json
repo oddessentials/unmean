@@ -1,0 +1,17 @@
+{
+  "name": "odd-essentials",
+  "description": "Claude Code plugins from Odd Essentials, LLC.",
+  "owner": {
+    "name": "Odd Essentials, LLC.",
+    "url": "https://github.com/oddessentials"
+  },
+  "plugins": [
+    {
+      "name": "unmean",
+      "source": "./plugins/unmean",
+      "description": "Quietly keeps profanity out of what Claude reads. Nothing is blocked, nothing nags: you see what you typed, Claude sees the clean version.",
+      "category": "productivity",
+      "tags": ["profanity", "filter", "prompt", "mod"]
+    }
+  ]
+}

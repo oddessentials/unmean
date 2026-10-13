@@ -1,0 +1,5 @@
+node_modules/
+# Written by Claude Code when the plugin is loaded with --plugin-dir
+plugins/*/.claude-plugin/types/
+plugins/*/tsconfig.json
+*.log

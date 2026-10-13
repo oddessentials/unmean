@@ -1,0 +1,14 @@
+{
+  "name": "unmean",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Claude Code plugin that quietly keeps profanity out of what Claude reads.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test \"tests/**/*.node.test.mjs\" && claude plugin test .",
+    "test:node": "node --test \"tests/**/*.node.test.mjs\"",
+    "test:claude": "claude plugin test .",
+    "validate": "claude plugin validate ."
+  }
+}

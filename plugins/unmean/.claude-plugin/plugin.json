@@ -1,0 +1,14 @@
+{
+  "name": "unmean",
+  "displayName": "Unmean",
+  "version": "1.0.0",
+  "description": "Quietly keeps profanity out of what Claude reads. Nothing is blocked, nothing nags: you see what you typed, Claude sees the clean version.",
+  "author": {
+    "name": "Odd Essentials, LLC.",
+    "url": "https://github.com/oddessentials"
+  },
+  "homepage": "https://github.com/oddessentials/unmean",
+  "repository": "https://github.com/oddessentials/unmean",
+  "license": "MIT",
+  "keywords": ["profanity", "filter", "prompt", "hooks", "mod"]
+}
