@@ -4,6 +4,10 @@ A Claude Code chaperone to filter out unconstructive and demeaning prompts
 without interrupting your workflow. It removes or masks listed bad words before
 forwarding your prompt to Claude, while preserving code snippets and paths.
 
+```text
+/plugin install unmean --marketplace oddessentials/unmean
+```
+
 Works in Claude Code only. A `prompt.submit` hook reads each prompt you send,
 removes or masks listed words, and passes the result to Claude. It reads the
 environment variables `HOME`, `USERPROFILE` and `CLAUDE_CONFIG_DIR` to find its

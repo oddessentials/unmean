@@ -9,6 +9,8 @@
   },
   "homepage": "https://github.com/oddessentials/unmean",
   "repository": "https://github.com/oddessentials/unmean",
+  "documentationUrl": "https://github.com/oddessentials/unmean#readme",
+  "supportUrl": "https://github.com/oddessentials/unmean/issues",
   "license": "MIT",
   "keywords": ["profanity", "filter", "prompt", "hooks", "mod"]
 }
