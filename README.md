@@ -7,7 +7,6 @@ without interrupting your workflow. It removes or masks listed bad words before
 forwarding your prompt to Claude, while preserving code snippets and paths.
 The built-in list is supplemented by high-confidence English words and phrases
 from [`cuss`](https://github.com/words/cuss), including racial and ethnic slurs.
-The external dictionary stays in the dependency, out of this repository.
 
 > [!NOTE]
 > Works in Claude Code only (the CLI and the desktop app's Code tab). It does
@@ -43,15 +42,8 @@ claude plugin install unmean@odd-essentials
 **From a clone**, to try it for one session:
 
 ```bash
-cd unmean/plugins/unmean
-npm ci --ignore-scripts
-claude --plugin-dir .
+claude --plugin-dir ./unmean/plugins/unmean
 ```
-
-Marketplace installs let Claude Code install the pinned dependency automatically;
-Node.js and npm must be available for that installation. Local clones need the
-`npm ci` step above. Filtering uses the installed data locally, with no dictionary
-downloads per prompt.
 
 ## Configuration
 
@@ -75,8 +67,8 @@ Changes apply on your next prompt. A malformed file falls back to the defaults
 and logs the reason to the debug log (`claude --debug`).
 
 Only `cuss` entries rated **2** (likely offensive, unlikely in clean text) and
-made of plain English letters and spaces are included. This rating measures
-ambiguity, not severity. Phrases match whole words separated by spaces or tabs
+made of plain English letters and spaces are included, minus a few everyday
+words such as `slave` and `yank`. This rating measures ambiguity, not severity. Phrases match whole words separated by spaces or tabs
 on the same line; they do not cross punctuation, code, or paths. The longest
 matching phrase wins. Mask mode preserves the spaces between its words.
 
@@ -127,10 +119,10 @@ claude plugin test .
 claude plugin validate .
 ```
 
-`cuss` is pinned in `package.json` and `package-lock.json`. To update it, install
-an explicit version with `npm install --save-exact cuss@<version> --ignore-scripts`
-and run the tests. Keep both files in the plugin directory so marketplace installs
-can resolve the dependency. Its data and MIT license stay in ignored `node_modules/`.
+`hooks/cuss-words.js` is generated from the pinned `cuss` dev dependency. To
+update it, run `npm install --save-exact --save-dev cuss@<version> --ignore-scripts`,
+then `npm run wordlist`, and run the tests. Words to keep out of it go in the
+`ALLOW` list in `scripts/cuss-words.mjs`.
 
 ## License
 

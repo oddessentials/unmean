@@ -9,9 +9,10 @@
     "test": "node --test \"tests/**/*.node.test.mjs\" && claude plugin test .",
     "test:node": "node --test \"tests/**/*.node.test.mjs\"",
     "test:claude": "claude plugin test .",
-    "validate": "claude plugin validate ."
+    "validate": "claude plugin validate .",
+    "wordlist": "node scripts/cuss-words.mjs"
   },
-  "dependencies": {
+  "devDependencies": {
     "cuss": "2.2.0"
   }
 }

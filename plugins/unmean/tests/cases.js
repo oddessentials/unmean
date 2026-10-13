@@ -48,6 +48,7 @@ export const CASES = [
   { name: 'external words can be allowed', config: { allow: ['dumb'] }, ...same('a dumb terminal') },
   { name: 'external words can be removed from the list', config: { remove: ['dumb'] }, ...same('a dumb terminal') },
   { name: 'ambiguous external words stay usable', ...same('The beaver and the addict are characters in the story.') },
+  { name: 'everyday external words stay usable', ...same('promote the slave replica, then yank the line and tinker with the jig') },
   { name: 'custom phrases match whole words', config: { add: ['purple turtle'] }, input: 'a purple turtle appeared', expected: 'a appeared' },
   { name: 'phrase matching ignores case and accepts spaces and tabs', config: { add: ['purple turtle'] }, input: 'a PURPLE \t turtle appeared', expected: 'a appeared' },
   { name: 'phrase normalization preserves word separation', config: { add: [' Purple   Turtle! '] }, input: 'a purple turtle appeared', expected: 'a appeared' },
