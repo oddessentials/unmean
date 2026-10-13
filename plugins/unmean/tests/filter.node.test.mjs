@@ -63,9 +63,6 @@ test('a 25 KB prompt filters well under the 100ms budget', () => {
   assert.ok(performance.now() - started < 100)
 })
 
-// Pastes with no whitespace made the old regex scan quadratic: seconds at
-// 100 KB, past the hook's budget. Each shape here must stay in milliseconds,
-// and the word after the blob must still be found.
 test('hostile 100 KB pastes with no whitespace filter in milliseconds', () => {
   const blob = {}
   for (let i = 0; i < 1500; i += 1) blob[`key${i}`] = { id: i, name: `item${i}`, tags: ['a', 'b', 'c'] }

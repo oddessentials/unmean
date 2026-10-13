@@ -21,16 +21,8 @@ export const DEFAULT_CONFIG = Object.freeze({
 // whole, and a token with anything but letters is never flagged.
 const TOKEN_SOURCE = String.raw`[A-Za-z0-9_]+(?:'[A-Za-z0-9_]+)*`
 
-// Spans the filter never touches: fenced and inline code, any whitespace-free
-// run that holds a slash (paths, URLs), and dotted names (obj.prop, file.ext,
-// host.name, user@host.name).
-//
-// Each kind is found in one pass that never re-reads a character, so no shape
-// of input can make a prompt slow to submit. Regexes that scanned from every
-// position once took seconds on a pasted 100 KB blob with no whitespace, long
-// enough for the hook to be skipped and the prompt to go through unfiltered.
 const FENCE = '```'
-const CHUNKS = /\S+/g // whitespace-free runs; each match succeeds at its first try
+const CHUNKS = /\S+/g
 const NAME_CHAR = /[A-Za-z0-9_$@]/
 
 // Wrappers that are removed when a removal leaves them empty: ("fuck") → ()
@@ -63,7 +55,6 @@ export function isFlagged(token, compiled) {
   return compiled.words.has(norm)
 }
 
-// From ``` to the next ```; an unclosed fence runs to the end.
 function markFences(text, mask) {
   let open = text.indexOf(FENCE)
   while (open !== -1) {
@@ -77,8 +68,6 @@ function markFences(text, mask) {
   }
 }
 
-// `code`: a backtick, one or more characters that are neither a backtick nor
-// a newline, and a backtick.
 function markInlineCode(text, mask) {
   let open = text.indexOf('`')
   while (open !== -1) {
@@ -93,8 +82,6 @@ function markInlineCode(text, mask) {
   }
 }
 
-// Within text[start, end): runs of name characters joined by single dots, with
-// at least one dot and name characters on both sides of every dot.
 function markDottedNames(text, mask, start, end) {
   let i = start
   while (i < end) {
@@ -114,8 +101,6 @@ function markDottedNames(text, mask, start, end) {
   }
 }
 
-// A whitespace-free run with a slash is a path or URL and is protected whole;
-// any other run is searched for dotted names.
 function markChunks(text, mask) {
   CHUNKS.lastIndex = 0
   let m
