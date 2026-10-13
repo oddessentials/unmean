@@ -6,11 +6,12 @@
   "description": "A Claude Code chaperone to filter out unconstructive and demeaning prompts without interrupting your workflow.",
   "license": "MIT",
   "scripts": {
-    "test": "node --test \"tests/**/*.node.test.mjs\" && claude plugin test .",
+    "test": "node scripts/cuss-words.mjs --check && node --test \"tests/**/*.node.test.mjs\" && claude plugin test .",
     "test:node": "node --test \"tests/**/*.node.test.mjs\"",
     "test:claude": "claude plugin test .",
     "validate": "claude plugin validate .",
-    "wordlist": "node scripts/cuss-words.mjs"
+    "wordlist": "node scripts/cuss-words.mjs",
+    "wordlist:check": "node scripts/cuss-words.mjs --check"
   },
   "devDependencies": {
     "cuss": "2.2.0"
