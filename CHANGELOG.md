@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/oddessentials/unmean/compare/v1.1.0...v1.1.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* add the documentation and support links and the install line ([8c53e9f](https://github.com/oddessentials/unmean/commit/8c53e9f7753d171b78521dcbe3ef3bf9855c7327))
+
 # [1.1.0](https://github.com/oddessentials/unmean/compare/v1.0.0...v1.1.0) (2026-10-13)
 
 
