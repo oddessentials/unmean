@@ -10,7 +10,7 @@
 //   "add": ["heck"],
 //   "remove": ["damn"],
 //   "allow": ["cocky"],
-//   "notify": false,
+//   "notify": true,
 //   "emptyReplacement": "(frustrated sigh)"
 // }
 

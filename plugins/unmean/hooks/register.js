@@ -30,6 +30,11 @@ function remember(cleaned, original) {
   while (originals.size > REMEMBER) originals.delete(originals.keys().next().value)
 }
 
+// "wtf, damn": each removed word once, in the order it was typed.
+function removedWords(matches) {
+  return [...new Set(matches.map(m => m.token.toLowerCase()))].join(', ')
+}
+
 function trimSlashes(path) {
   return String(path).replace(/[\\/]+$/, '')
 }
@@ -80,7 +85,7 @@ export function register(on) {
       if (!result.changed) return next(e)
       remember(result.text, e.text)
       $.ui.log(`${PLUGIN}: softened ${result.count} term(s) before Claude read the prompt`, { to: 'debug' })
-      if (compiled.notify) $.ui.log(`softened ${result.count} term(s) before Claude read this prompt`)
+      if (compiled.notify) $.ui.log(`removed before Claude read this prompt: ${removedWords(result.matches)}`)
       cleaned = result.text
     } catch (err) {
       const why = err && err.message ? err.message : String(err)

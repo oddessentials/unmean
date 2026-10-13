@@ -12,7 +12,7 @@ export const DEFAULT_CONFIG = Object.freeze({
   add: Object.freeze([]),
   remove: Object.freeze([]),
   allow: Object.freeze([]),
-  notify: false, // true adds a dim transcript line whenever something was softened
+  notify: true, // adds a dim transcript line naming the removed words; Claude does not read it
   emptyReplacement: '(frustrated sigh)', // what Claude reads when the whole prompt was profanity
 })
 

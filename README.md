@@ -84,7 +84,7 @@ Every field is optional:
   "add": ["heck"],
   "remove": ["damn"],
   "allow": ["cocky"],
-  "notify": false,
+  "notify": true,
   "emptyReplacement": "(frustrated sigh)"
 }
 ```
@@ -97,7 +97,7 @@ Every field is optional:
 | `add` | `[]` | Extra words to catch. Each form is matched exactly, so list every form you want caught (`heck`, `hecking`). This is where you add anything beyond the default list, including slurs you want caught. |
 | `remove` | `[]` | Default words to stop catching. |
 | `allow` | `[]` | Exact words to never touch, even when a rule would otherwise catch them. |
-| `notify` | `false` | `true` adds a dim transcript line whenever a prompt was softened. Default is silent. |
+| `notify` | `true` | Adds a dim line under your message naming the words that were removed, such as `removed before Claude read this prompt: wtf`. Claude does not read it. `false` makes it silent. |
 | `emptyReplacement` | `"(frustrated sigh)"` | What Claude reads when a prompt was nothing but profanity. |
 
 The file is read fresh whenever it changes, so edits take effect on your next
