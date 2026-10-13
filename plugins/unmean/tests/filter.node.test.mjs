@@ -1,4 +1,3 @@
-// Pure filter tests for plain Node (`node --test`). No Claude Code needed.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { clean, compile, DEFAULT_CONFIG, isFlagged } from '../hooks/filter.js'

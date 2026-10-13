@@ -1,13 +1,7 @@
-// Config file parsing for unmean. Pure, like filter.js.
-//
-// Every key is optional and a bad value falls back to the default rather than
-// disabling the filter. The keys are listed in the README.
-
 import { DEFAULT_CONFIG, normalizeWord } from './filter.js'
 
 const MODES = new Set(['remove', 'mask'])
 
-/** Parses the config file's text. Never throws. */
 export function parseConfigText(text) {
   let raw
   try {
@@ -18,7 +12,6 @@ export function parseConfigText(text) {
   return validateConfig(raw)
 }
 
-/** Validates a parsed object field by field. Unusable fields keep their default. */
 export function validateConfig(raw) {
   const config = { ...DEFAULT_CONFIG }
   const problems = []

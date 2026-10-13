@@ -1,41 +1,28 @@
-// Pure text filtering for unmean.
-//
-// Nothing in this file touches Claude Code's API, so the same code runs under
-// `claude plugin test` and plain `node --test`.
-
 import { DEFAULT_WORDS } from './wordlist.js'
 
 export const DEFAULT_CONFIG = Object.freeze({
   enabled: true,
-  mode: 'remove', // 'remove' drops the word, 'mask' replaces each letter with maskChar
+  mode: 'remove',
   maskChar: '*',
   add: Object.freeze([]),
   remove: Object.freeze([]),
   allow: Object.freeze([]),
-  notify: true, // adds a dim transcript line with the count of removed words; Claude does not read it
-  emptyReplacement: '(frustrated sigh)', // what Claude reads when the whole prompt was profanity
+  notify: true,
+  emptyReplacement: '(frustrated sigh)',
 })
 
-// A token is a run of letters, digits and underscores, with apostrophes allowed
-// inside ("asshole's"). Digits and underscores keep numbers and snake_case
-// whole, and a token with anything but letters is never flagged.
 const TOKEN_SOURCE = String.raw`[A-Za-z0-9_]+(?:'[A-Za-z0-9_]+)*`
 
 const FENCE = '```'
 const CHUNKS = /\S+/g
 const NAME_CHAR = /[A-Za-z0-9_$@]/
 
-// Wrappers that are removed when a removal leaves them empty: ("fuck") → ()
 const PAIRS = { '"': '"', "'": "'", '(': ')', '[': ']', '{': '}', '*': '*' }
 
 export function normalizeWord(word) {
   return String(word).toLowerCase().replace(/[^a-z]/g, '')
 }
 
-/**
- * Turns a config object into the structure `clean` consumes. Call it once per
- * config change, not per prompt.
- */
 export function compile(config = DEFAULT_CONFIG) {
   const cfg = { ...DEFAULT_CONFIG, ...config }
   const removed = new Set((cfg.remove ?? []).map(normalizeWord))
@@ -46,10 +33,6 @@ export function compile(config = DEFAULT_CONFIG) {
   return { ...cfg, words, allow }
 }
 
-/**
- * Whether one token (as it appears in the text) is on the list. Exact match
- * only, ignoring case and apostrophes: no spelling variants are inferred.
- */
 export function isFlagged(token, compiled) {
   const norm = token.toLowerCase().replace(/'/g, '')
   return compiled.words.has(norm)
@@ -120,7 +103,6 @@ function protectedMask(text) {
   return mask
 }
 
-/** Every flagged token in `text` as { start, end, token }, in order. */
 export function findMatches(text, compiled) {
   const mask = protectedMask(text)
   const matches = []
@@ -142,17 +124,14 @@ export function findMatches(text, compiled) {
   return matches
 }
 
-// Removes text[s, e) and tidies the join so the sentence still reads.
 function removeSpan(text, s, e) {
   let a = s
   let b = e
   const token = text.slice(s, e)
 
-  // Hyphenated compounds: "dumb-ass" → "dumb", "fucking-great" → "great".
   if (a > 1 && text[a - 1] === '-' && /\S/.test(text[a - 2])) a -= 1
   else if (b + 1 < text.length && text[b] === '-' && /\S/.test(text[b + 1])) b += 1
 
-  // Wrappers left empty: ("fuck") and "fuck" in quotes go too.
   while (a > 0 && b < text.length && PAIRS[text[a - 1]] === text[b]) {
     a -= 1
     b += 1
@@ -166,16 +145,12 @@ function removeSpan(text, s, e) {
   const capitalize = atSentenceStart && /^[A-Z]/.test(token)
 
   if (atSentenceStart && punctAfter) {
-    // "Fuck, it broke" → "It broke"; "Damn!" → ""
     b += punctAfter[0].length
   } else if (/,[ \t]*$/.test(pre) && /^[ \t]*(?:[.!?]|\n|$)/.test(post)) {
-    // "it broke, damn." → "it broke."
     a -= pre.length - pre.replace(/[ \t]*,[ \t]*$/, '').length
   } else if (/^[ \t]/.test(post) && (/[ \t]$/.test(pre) || atSentenceStart)) {
-    // "the fucking build" → "the build"
     b += 1
   } else if (/[ \t]$/.test(pre)) {
-    // "the build is fucked." → "the build is."
     a -= 1
   }
 
@@ -184,11 +159,6 @@ function removeSpan(text, s, e) {
   return text.slice(0, a) + tail
 }
 
-/**
- * Cleans `text`. Returns { text, changed, count, matches }; `text` is the
- * input itself when nothing was flagged, the filter is disabled, or the input
- * is not a string.
- */
 export function clean(text, compiled = compile()) {
   const untouched = { text, changed: false, count: 0, matches: [] }
   if (typeof text !== 'string' || !compiled.enabled) return untouched

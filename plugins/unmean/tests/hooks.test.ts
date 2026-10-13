@@ -1,14 +1,9 @@
-// Hook tests under `claude plugin test`: the module is loaded by Claude Code's
-// own engine and events are fired through it, with the engine's answers stubbed.
 import { expect, mock, test } from 'claude-code/testing'
 
 const COMPOSER = { kind: 'composer' } as const
 
-// `log` collects the transcript lines the module writes, leaving out debug-log lines.
 type Arranged = { env?: Record<string, string>; config?: string; log?: unknown[] }
 
-// Stubs for everything the module asks the engine for. A test with no `config`
-// has no config file on disk.
 function arrange(on: any, { env = {}, config, log }: Arranged = {}) {
   mock.env(on, env)
   if (config === undefined) {

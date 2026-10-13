@@ -1,9 +1,3 @@
-// Shared table for the pure filter tests. Both runners use it:
-//   tests/filter.node.test.mjs  (node --test, no Claude Code needed)
-//   tests/filter.test.ts        (claude plugin test)
-//
-// `config` is merged over the defaults; `expected` is what Claude would read.
-
 const same = input => ({ input, expected: input })
 
 export const CASES = [
@@ -51,12 +45,10 @@ export const CASES = [
   { name: 'the empty replacement is configurable', config: { emptyReplacement: 'hello' }, input: 'damn', expected: 'hello' },
 ]
 
-// Tokens the matcher must catch.
 export const FLAGGED = [
   'FUCK', 'Fucked', 'fuckin', 'bitches', 'shitty', 'crappy', "asshole's", 'WTF',
 ]
 
-// Tokens the matcher must leave alone.
 export const NOT_FLAGGED = [
   'Scunthorpe', 'assess', 'assessed', 'assesses', 'assessment', 'classic', 'bass', 'passes',
   'shiitake', 'cocktail', 'assassin', 'as', 'dickens', 'asset', 'hello', 'damning',

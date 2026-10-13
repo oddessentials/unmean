@@ -1,4 +1,4 @@
 {
-  "description": "unmean: removes profanity from prompts before Claude reads them",
+  "description": "Removes or masks listed bad words before forwarding your prompt to Claude, while preserving code snippets and paths.",
   "modules": ["./register.js"]
 }

@@ -2,7 +2,7 @@
   "name": "unmean",
   "displayName": "Unmean",
   "version": "1.0.0",
-  "description": "Removes profanity from your prompts before Claude reads them. Nothing is blocked, nothing nags, and Claude never knows.",
+  "description": "Removes or masks listed bad words before forwarding your prompt to Claude, while preserving code snippets and paths.",
   "author": {
     "name": "Odd Essentials, LLC.",
     "url": "https://github.com/oddessentials"
