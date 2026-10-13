@@ -13,6 +13,7 @@ export const CASES = [
   { name: 'numbers and model names are not words', ...same('455 tests fail on the Galaxy A55') },
   { name: 'markdown emphasis around a removed word goes too', input: 'this is **fucking** broken', expected: 'this is broken' },
   { name: 'hyphenated compounds', input: 'that dumb-ass approach', expected: 'that dumb approach' },
+  { name: 'a word before a hyphen keeps its neighbors apart', input: 'he said fuck-all', expected: 'he said all' },
   { name: 'possessives', input: "the asshole's code", expected: 'the code' },
   { name: 'listed forms of a word', input: 'he bitched about the shitty tests', expected: 'he about the tests' },
   { name: 'wrappers left empty are removed too', input: '(fuck) that', expected: 'that' },
