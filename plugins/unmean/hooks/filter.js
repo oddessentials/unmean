@@ -3,7 +3,7 @@
 // Nothing in this file touches Claude Code's API, so the same code runs under
 // `claude plugin test` and plain `node --test`.
 
-import { DEFAULT_WORDS, DEFAULT_ALLOW } from './wordlist.js'
+import { DEFAULT_WORDS } from './wordlist.js'
 
 export const DEFAULT_CONFIG = Object.freeze({
   enabled: true,
@@ -16,16 +16,10 @@ export const DEFAULT_CONFIG = Object.freeze({
   emptyReplacement: '(frustrated sigh)', // what Claude reads when the whole prompt was profanity
 })
 
-// Endings accepted after a listed word: "fucks", "shitty", "bitches", "pissed".
-const SUFFIXES = ['', 's', 'es', 'ed', 'ing', 'in', 'er', 'ers', 'y', 'ies', 'ier', 'iest']
-
-// Leetspeak and symbol substitutions, applied before matching.
-const LEET = { '@': 'a', '4': 'a', '3': 'e', '1': 'i', '!': 'i', '0': 'o', '5': 's', '$': 's', '7': 't' }
-
-// A token is a run of word-ish characters. Apostrophes and exclamation marks
-// may appear inside a token ("fuckin'", "sh!t") but not at its edges, so
-// "idiot!" tokenizes as "idiot". Underscores join, so snake_case stays whole.
-const TOKEN_SOURCE = String.raw`[A-Za-z0-9@$_][A-Za-z0-9@$_*]*(?:['!][A-Za-z0-9@$_*]+)*`
+// A token is a run of letters, digits and underscores, with apostrophes allowed
+// inside ("asshole's"). Digits and underscores keep "A55" and snake_case whole,
+// and a token with anything but letters is never flagged.
+const TOKEN_SOURCE = String.raw`[A-Za-z0-9_]+(?:'[A-Za-z0-9_]+)*`
 
 // Spans the filter never touches: code, URLs, paths, dotted names.
 const PROTECTED = [
@@ -37,26 +31,10 @@ const PROTECTED = [
 ]
 
 // Wrappers that are removed when a removal leaves them empty: ("fuck") → ()
-const PAIRS = { '"': '"', "'": "'", '(': ')', '[': ']', '{': '}' }
+const PAIRS = { '"': '"', "'": "'", '(': ')', '[': ']', '{': '}', '*': '*' }
 
 export function normalizeWord(word) {
   return String(word).toLowerCase().replace(/[^a-z]/g, '')
-}
-
-function toRuns(s) {
-  const runs = []
-  for (const ch of s) {
-    const last = runs[runs.length - 1]
-    if (last && last[0] === ch) last[1] += 1
-    else runs.push([ch, 1])
-  }
-  return runs
-}
-
-const squeeze = runs => runs.map(r => r[0]).join('')
-
-function escapeRegExp(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 /**
@@ -66,58 +44,20 @@ function escapeRegExp(s) {
 export function compile(config = DEFAULT_CONFIG) {
   const cfg = { ...DEFAULT_CONFIG, ...config }
   const removed = new Set((cfg.remove ?? []).map(normalizeWord))
-  const allow = new Set([...DEFAULT_ALLOW, ...(cfg.allow ?? [])].map(normalizeWord).filter(Boolean))
+  const allow = new Set((cfg.allow ?? []).map(normalizeWord).filter(Boolean))
   const words = new Set(
-    [...DEFAULT_WORDS, ...(cfg.add ?? [])].map(normalizeWord).filter(w => w && !removed.has(w)),
+    [...DEFAULT_WORDS, ...(cfg.add ?? [])].map(normalizeWord).filter(w => w && !removed.has(w) && !allow.has(w)),
   )
-  // Every word+suffix target, keyed by its letters with repeats collapsed, so a
-  // token's lookup is one Map read. Each target keeps its run lengths so that
-  // "as" never matches "ass" while "asssss" does.
-  const targets = new Map()
-  for (const word of words) {
-    for (const suffix of SUFFIXES) {
-      const full = word + suffix
-      if (allow.has(full)) continue
-      const runs = toRuns(full)
-      const key = squeeze(runs)
-      const list = targets.get(key)
-      if (list) list.push(runs)
-      else targets.set(key, [runs])
-    }
-  }
-  return { ...cfg, words, allow, targets }
+  return { ...cfg, words, allow }
 }
 
-function normalizeToken(token) {
-  let out = ''
-  for (const ch of token.toLowerCase()) {
-    if (ch === "'") continue
-    out += LEET[ch] ?? ch
-  }
-  return out
-}
-
-function matchesWildcard(norm, compiled) {
-  // "f***", "sh*t", "a**hole": each star run stands for one or more letters.
-  if (norm.length < 3 || !/[a-z]/.test(norm)) return false
-  const parts = norm.split(/\*+/)
-  if (parts.some(p => /[^a-z]/.test(p))) return false
-  const re = new RegExp('^' + parts.map(escapeRegExp).join('[a-z]+') + '$')
-  for (const word of compiled.words) if (re.test(word)) return true
-  return false
-}
-
-/** Whether one token (as it appears in the text) is on the list. */
+/**
+ * Whether one token (as it appears in the text) is on the list. Exact match
+ * only, ignoring case and apostrophes: no spelling variants are inferred.
+ */
 export function isFlagged(token, compiled) {
-  if (token.includes('_')) return false
-  const norm = normalizeToken(token)
-  if (compiled.allow.has(norm)) return false
-  if (norm.includes('*')) return matchesWildcard(norm, compiled)
-  if (/[^a-z]/.test(norm)) return false
-  const runs = toRuns(norm)
-  const candidates = compiled.targets.get(squeeze(runs))
-  if (!candidates) return false
-  return candidates.some(target => target.every((r, i) => runs[i][1] >= r[1]))
+  const norm = token.toLowerCase().replace(/'/g, '')
+  return compiled.words.has(norm)
 }
 
 function protectedMask(text) {
@@ -163,10 +103,6 @@ function removeSpan(text, s, e) {
   let a = s
   let b = e
   const token = text.slice(s, e)
-
-  // "**fuck**": the token swallowed the closing stars, take the opening ones too.
-  const stars = token.match(/\*+$/)
-  if (stars && text.slice(a - stars[0].length, a) === stars[0]) a -= stars[0].length
 
   // Hyphenated compounds: "dumb-ass" → "dumb", "fucking-great" → "great".
   if (a > 1 && text[a - 1] === '-' && /\S/.test(text[a - 2])) a -= 1

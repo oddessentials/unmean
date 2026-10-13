@@ -24,11 +24,10 @@ So `fix this fucking bug` shows in your transcript as `fix this fucking bug`,
 and Claude reads `fix this bug`. A prompt with no flagged words is untouched and
 has no effect at all.
 
-Detection is word-boundary aware, so ordinary words that merely contain a short
-bad word are safe: `Scunthorpe`, `assess`, `classic`, `bass`, `assassin`, and
-`asset` all pass through. It also sees through common disguises: mixed case
-(`SHIT`), repeated letters (`shiiit`), simple leetspeak (`@ss`, `sh1t`, `a$$`),
-and self-censoring asterisks (`f***`, `sh*t`). Code spans, inline code, file
+Matching is exact: a word is caught only when it is on the list, ignoring
+case. Ordinary words that merely contain a bad word are safe (`Scunthorpe`,
+`assess`, `classic`, `bass`), and so are numbers, names, and spellings that
+aren't on the list, such as `fuuuck`, `sh1t`, or `f***`. Code spans, inline code, file
 paths, URLs, and dotted identifiers are never altered, so a variable literally
 named `shit` or a path like `src/ass/index.js` is left alone.
 
@@ -95,7 +94,7 @@ Every field is optional:
 | `enabled` | `true` | Turn the filter off without uninstalling. |
 | `mode` | `"remove"` | `"remove"` drops the word and tidies the sentence; `"mask"` replaces each letter with `maskChar`, keeping the sentence's shape. |
 | `maskChar` | `"*"` | The character used in `"mask"` mode. |
-| `add` | `[]` | Extra words to catch. Give the base form; endings and leetspeak are handled for you. This is where you add anything beyond the default list, including slurs you want caught. |
+| `add` | `[]` | Extra words to catch. Each form is matched exactly, so list every form you want caught (`heck`, `hecking`). This is where you add anything beyond the default list, including slurs you want caught. |
 | `remove` | `[]` | Default words to stop catching. |
 | `allow` | `[]` | Exact words to never touch, even when a rule would otherwise catch them. |
 | `notify` | `false` | `true` adds a dim transcript line whenever a prompt was softened. Default is silent. |
@@ -125,8 +124,8 @@ Three ways, from most temporary to most permanent:
 - **Insults without listed words are not caught.** "You are useless" or "this is
   garbage" carry no flagged word, so they pass through unchanged. `unmean`
   filters language, not sentiment.
-- **It is a wordlist, not a judge.** A spelling nobody anticipated can slip
-  through. Add it to `add` when you find one.
+- **It is a wordlist, not a judge.** Only exact listed words are caught;
+  variant spellings pass through by design. Add a form to `add` if you want it.
 - **Only your own typed prompts are filtered.** Tool output, Claude's replies,
   and messages from other sessions or scheduled tasks are left as they are.
 - **Code, paths, and URLs are deliberately skipped**, so a flagged word that is

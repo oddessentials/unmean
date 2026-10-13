@@ -9,14 +9,15 @@ const same = input => ({ input, expected: input })
 export const CASES = [
   { name: 'a clean prompt passes through unchanged', ...same('Please refactor the login handler.') },
   { name: 'words that merely contain a bad word are not flagged', ...same('The classic Scunthorpe assessment passed with a bass guitar in the cockpit.') },
-  { name: 'assess is not flagged, though its letters squeeze to a plural of a listed word', ...same('Please assess the risk.') },
+  { name: 'assess is not flagged', ...same('Please assess the risk.') },
   { name: 'a profane word mid-sentence is removed', input: 'Fix this fucking bug now.', expected: 'Fix this bug now.' },
   { name: 'a sentence-initial interjection goes with its comma', input: 'Fuck, it broke again.', expected: 'It broke again.' },
   { name: 'capitalization follows the word that was removed', input: 'fuck, it broke again.', expected: 'it broke again.' },
   { name: 'a sentence-final interjection goes with its comma', input: 'It broke again, damn.', expected: 'It broke again.' },
-  { name: 'mixed case and repeated letters', input: 'this is SHIIIIT', expected: 'this is' },
-  { name: 'leetspeak, leaving innocent numbered words alone', input: 'you @$$hole, st0p writing sh1t c0de', expected: 'you, st0p writing c0de' },
-  { name: 'self-censoring with asterisks', input: 'what the f*** is this', expected: 'what the is this' },
+  { name: 'mixed case', input: 'this is SHIT', expected: 'this is' },
+  { name: 'only exact words: stretched, leetspeak and starred spellings pass', ...same('this is shiiiit, sh1t and f***') },
+  { name: 'numbers and model names are not words', ...same('455 tests fail on the Galaxy A55') },
+  { name: 'markdown emphasis around a removed word goes too', input: 'this is **fucking** broken', expected: 'this is broken' },
   { name: 'hyphenated compounds', input: 'that dumb-ass approach', expected: 'that dumb approach' },
   { name: 'possessives', input: "the asshole's code", expected: 'the code' },
   { name: 'common endings', input: 'he bitched about the shitty tests', expected: 'he about the tests' },
@@ -39,20 +40,19 @@ export const CASES = [
   { name: 'default words can be removed', config: { remove: ['damn'] }, ...same('damn it') },
   { name: 'words can be allowed in one exact form', config: { allow: ['shitty'] }, ...same('the shitty tests') },
   { name: 'disabled in the config', config: { enabled: false }, ...same('fuck') },
-  { name: 'mask mode keeps the shape of the sentence', config: { mode: 'mask' }, input: 'this is shit, sh1t', expected: 'this is ****, ****' },
+  { name: 'mask mode keeps the shape of the sentence', config: { mode: 'mask' }, input: 'this is shit, SHIT', expected: 'this is ****, ****' },
   { name: 'the mask character is configurable', config: { mode: 'mask', maskChar: '#' }, input: 'oh crap', expected: 'oh ####' },
   { name: 'the empty replacement is configurable', config: { emptyReplacement: 'hello' }, input: 'damn', expected: 'hello' },
 ]
 
-// Spellings the matcher must catch.
+// Tokens the matcher must catch.
 export const FLAGGED = [
-  'FUCK', 'fuuuck', 'fuckkk', 'sh1t', '$hit', '@ss', 'a$$', 'b!tch', 'f***', 'f**k', 'sh*t',
-  "fuckin'", 'Fucked', 'bitches', 'shitty', 'crappy', 'asssss', 'WTF',
+  'FUCK', 'Fucked', 'fuckin', 'bitches', 'shitty', 'crappy', "asshole's", 'WTF',
 ]
 
 // Spellings the matcher must leave alone.
 export const NOT_FLAGGED = [
   'Scunthorpe', 'assess', 'assessed', 'assesses', 'assessment', 'classic', 'bass', 'passes',
   'shiitake', 'cocktail', 'assassin', 'as', 'dickens', 'asset', 'hello', 'damning',
-  'test*', 'a*', 'snake_case_ass',
+  'snake_case_ass', 'fuuuck', 'sh1t', '@ss', '455', 'A55', 'Shiite', 'pricking',
 ]

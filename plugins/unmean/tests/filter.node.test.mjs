@@ -14,7 +14,7 @@ for (const c of CASES) {
   })
 }
 
-test('obfuscated spellings are flagged', () => {
+test('listed words are flagged', () => {
   for (const t of FLAGGED) assert.equal(isFlagged(t, defaults), true, t)
 })
 

@@ -1,9 +1,8 @@
 // Default wordlist for unmean.
 //
-// Base forms only, lowercase letters only. The matcher also catches common
-// endings (s, es, ed, ing, in, er, ers, y, ies, ier, iest), mixed case,
-// repeated letters ("shiiit"), simple leetspeak ("sh1t", "@ss", "a$$") and
-// self-censoring with asterisks ("f***", "sh*t").
+// Lowercase letters only. Matching is exact (ignoring case and apostrophes),
+// so every form to catch is listed: "fucks", "bitches" and "pissed" are
+// entries of their own, and spellings like "fuuuck" or "sh1t" pass through.
 //
 // The default list is profanity and common vulgar insults. It deliberately
 // stops there: add anything else you want caught, including slurs, through
@@ -11,25 +10,28 @@
 
 export const DEFAULT_WORDS = [
   // f-words
-  'fuck', 'fucker', 'fucking', 'fuckin', 'fucked', 'fucks',
-  'motherfucker', 'motherfucking', 'motherfuckin',
-  'fuckface', 'fuckhead', 'fuckwit', 'fuckup', 'clusterfuck',
+  'fuck', 'fucks', 'fucked', 'fucking', 'fuckin', 'fucker', 'fuckers',
+  'motherfucker', 'motherfuckers', 'motherfucking', 'motherfuckin',
+  'fuckface', 'fuckhead', 'fuckheads', 'fuckwit', 'fuckwits', 'fuckup', 'fuckups', 'clusterfuck',
   'fuk', 'fukin', 'fuking', 'fcuk', 'phuck',
   // s-words
-  'shit', 'shite', 'shitty', 'shithead', 'shitshow', 'shitbag',
-  'bullshit', 'horseshit', 'dipshit', 'apeshit', 'batshit', 'dumbshit',
+  'shit', 'shits', 'shitting', 'shitted', 'shitty', 'shitter', 'shite',
+  'shithead', 'shitheads', 'shitshow', 'shitbag',
+  'bullshit', 'bullshitting', 'horseshit', 'dipshit', 'apeshit', 'batshit', 'dumbshit',
   'shyt',
   // a-words
-  'ass', 'asshole', 'arse', 'arsehole', 'dumbass', 'jackass', 'asswipe', 'asshat', 'smartass',
+  'ass', 'asses', 'asshole', 'assholes', 'arse', 'arses', 'arsehole', 'arseholes',
+  'dumbass', 'dumbasses', 'jackass', 'jackasses', 'asswipe', 'asshat', 'asshats', 'smartass',
   'azz',
   // other profanity and insults
-  'bitch', 'biatch', 'bastard', 'cunt', 'dick', 'dickhead', 'dickwad', 'prick',
-  'piss', 'damn', 'dammit', 'damnit', 'goddamn', 'goddammit', 'goddamned',
-  'crap', 'twat', 'wanker', 'bollocks', 'tosser', 'slut', 'whore',
-  'douche', 'douchebag', 'scumbag',
+  'bitch', 'bitches', 'bitched', 'bitching', 'bitchy', 'biatch',
+  'bastard', 'bastards', 'cunt', 'cunts', 'dick', 'dicks', 'dickhead', 'dickheads', 'dickwad',
+  'prick', 'pricks',
+  'piss', 'pissed', 'pisses', 'pissing',
+  'damn', 'damned', 'dammit', 'damnit', 'goddamn', 'goddammit', 'goddamned',
+  'crap', 'crappy', 'crapped', 'twat', 'twats', 'wanker', 'wankers', 'bollocks',
+  'tosser', 'tossers', 'slut', 'sluts', 'whore', 'whores',
+  'douche', 'douchebag', 'douchebags', 'scumbag', 'scumbags',
   // acronyms
   'wtf', 'stfu', 'omfg', 'lmfao', 'ffs', 'mofo',
 ]
-
-// Forms the suffix rules would otherwise catch but that are ordinary words.
-export const DEFAULT_ALLOW = ['assess', 'assesses', 'assessed', 'assessing', 'assessment', 'assessments', 'reassess', 'damning', 'dicky', 'dickey', 'dickens', 'dicker', 'dickers']
