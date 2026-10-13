@@ -1,4 +1,4 @@
 {
-  "description": "unmean: softens profanity in prompts before Claude reads them",
+  "description": "unmean: removes profanity from prompts before Claude reads them",
   "modules": ["./register.js"]
 }

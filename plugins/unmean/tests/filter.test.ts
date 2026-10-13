@@ -13,7 +13,7 @@ for (const c of CASES) {
   })
 }
 
-test('obfuscated spellings are flagged', async () => {
+test('listed words are flagged', async () => {
   for (const t of FLAGGED) expect(isFlagged(t, defaults)).toBe(true)
 })
 

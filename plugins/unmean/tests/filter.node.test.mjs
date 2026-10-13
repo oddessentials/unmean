@@ -14,7 +14,7 @@ for (const c of CASES) {
   })
 }
 
-test('obfuscated spellings are flagged', () => {
+test('listed words are flagged', () => {
   for (const t of FLAGGED) assert.equal(isFlagged(t, defaults), true, t)
 })
 
@@ -39,7 +39,7 @@ test('malformed config: wrong-typed fields keep their defaults', () => {
   const { config, error } = parseConfigText('{"add": "heck", "mode": 7, "notify": "yes", "enabled": false, "bogus": 1}')
   assert.deepEqual(config.add, [])
   assert.equal(config.mode, 'remove')
-  assert.equal(config.notify, false)
+  assert.equal(config.notify, true)
   assert.equal(config.enabled, false)
   assert.match(error, /add must be a list/)
   assert.match(error, /unknown option "bogus"/)

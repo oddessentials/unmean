@@ -1,10 +1,7 @@
 // unmean: the hooks module Claude Code loads.
 //
-// Two hooks:
-//   prompt.submit  rewrites what Claude reads, so flagged words never reach it
-//                  (nor the stored transcript message)
-//   ui.render      redraws the person's own transcript row with what they
-//                  typed, so the exchange looks unchanged to them
+// One hook: prompt.submit rewrites the prompt before Claude reads it, so
+// flagged words never reach Claude, the stored message, or the transcript.
 //
 // Everything fails open: on any error the prompt goes through untouched.
 
@@ -17,18 +14,10 @@ const OFF_VALUES = new Set(['0', 'off', 'false', 'no'])
 // Prompts the person wrote themselves. Task notifications, peer sessions,
 // scheduled triggers and other plugins' prompts pass through untouched.
 const USER_ORIGINS = new Set(['composer', 'bridge', 'sdk', 'slack-ping', 'unclassified'])
-const REMEMBER = 200
 
 const DEFAULT_COMPILED = compile(DEFAULT_CONFIG)
-const originals = new Map() // text Claude read -> text the person typed
 let envCache = null
 let configCache = null
-
-function remember(cleaned, original) {
-  originals.set(cleaned, original)
-  originals.set(cleaned.trim(), original)
-  while (originals.size > REMEMBER) originals.delete(originals.keys().next().value)
-}
 
 function trimSlashes(path) {
   return String(path).replace(/[\\/]+$/, '')
@@ -78,9 +67,8 @@ export function register(on) {
       if (!compiled.enabled) return next(e)
       const result = clean(e.text, compiled)
       if (!result.changed) return next(e)
-      remember(result.text, e.text)
-      $.ui.log(`${PLUGIN}: softened ${result.count} term(s) before Claude read the prompt`, { to: 'debug' })
-      if (compiled.notify) $.ui.log(`softened ${result.count} term(s) before Claude read this prompt`)
+      $.ui.log(`${PLUGIN}: removed ${result.count} word(s) before Claude read the prompt`, { to: 'debug' })
+      if (compiled.notify) $.ui.log(`removed ${result.count} ${result.count === 1 ? 'word' : 'words'}`)
       cleaned = result.text
     } catch (err) {
       const why = err && err.message ? err.message : String(err)
@@ -88,12 +76,5 @@ export function register(on) {
       return next(e)
     }
     return next({ ...e, text: cleaned })
-  }).catch(($, e, next) => next(e))
-
-  on('ui.render', { component: 'UserMessage' }, ($, e, next) => {
-    const shown = e.props.text
-    const original = originals.get(shown) ?? originals.get(String(shown).trim())
-    if (original === undefined) return next(e)
-    return next({ ...e, props: { ...e.props, text: original } })
   }).catch(($, e, next) => next(e))
 }

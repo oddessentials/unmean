@@ -5,6 +5,6 @@
   "add": [],
   "remove": [],
   "allow": [],
-  "notify": false,
+  "notify": true,
   "emptyReplacement": "(frustrated sigh)"
 }

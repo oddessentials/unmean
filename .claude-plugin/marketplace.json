@@ -9,7 +9,7 @@
     {
       "name": "unmean",
       "source": "./plugins/unmean",
-      "description": "Quietly keeps profanity out of what Claude reads. Nothing is blocked, nothing nags: you see what you typed, Claude sees the clean version.",
+      "description": "Removes profanity from your prompts before Claude reads them. Nothing is blocked, nothing nags, and Claude never knows.",
       "category": "productivity",
       "tags": ["profanity", "filter", "prompt", "mod"]
     }

@@ -4,11 +4,12 @@ import { expect, mock, test } from 'claude-code/testing'
 
 const COMPOSER = { kind: 'composer' } as const
 
-type Arranged = { env?: Record<string, string>; config?: string }
+// `log` collects the transcript lines the module writes, leaving out debug-log lines.
+type Arranged = { env?: Record<string, string>; config?: string; log?: unknown[] }
 
 // Stubs for everything the module asks the engine for. A test with no `config`
 // has no config file on disk.
-function arrange(on: any, { env = {}, config }: Arranged = {}) {
+function arrange(on: any, { env = {}, config, log }: Arranged = {}) {
   mock.env(on, env)
   if (config === undefined) {
     on('fs.stat', () => ({ deny: 'ENOENT: no such file or directory' }))
@@ -16,13 +17,11 @@ function arrange(on: any, { env = {}, config }: Arranged = {}) {
     on('fs.stat', () => ({ value: { kind: 'file', size: config.length, mtimeMs: 1, isLink: false } }))
     on('fs.read', () => ({ value: config }))
   }
-  on('ui.log', () => ({ value: undefined }))
+  on('ui.log', ($: any, e: any) => {
+    if (log && !JSON.stringify(e).includes('"debug"')) log.push(e)
+    return { value: undefined }
+  })
   on('prompt.submit', ($: any, e: any) => ({ text: e.text }))
-}
-
-// Stands for what Claude Code draws at a transcript row: the row's text.
-function drawRows(on: any) {
-  on('ui.render', ($: any, e: any) => ({ type: 'Text', props: {}, children: [e.props.text] }))
 }
 
 async function submit($: any, text: string, origin: unknown = COMPOSER): Promise<string> {
@@ -65,33 +64,20 @@ test('prompts that are not the person\'s own words are left alone', async ($, on
   expect(await submit($, 'the fucking build failed', { kind: 'task-notification' })).toBe('the fucking build failed')
 })
 
-test('the transcript row shows what the person typed, on every surface', async ($, on) => {
-  arrange(on)
-  drawRows(on)
-  await submit($, 'fix this fucking bug')
-  for (const surface of ['terminal', 'desktop'] as const) {
-    const ui = await $.ui.mount({
-      plugin: 'unmean',
-      surface,
-      component: 'UserMessage',
-      requestId: 'msg-1',
-      props: { text: 'fix this bug', origin: COMPOSER, isExpanded: true },
-    })
-    expect(await ui.find({ type: 'Text', text: 'fix this fucking bug' })).toBeDefined()
-    await ui.unmount()
-  }
+test('by default a transcript line says how many words were removed, never which', async ($, on) => {
+  const log: unknown[] = []
+  arrange(on, { log })
+  expect(await submit($, 'fix this damn bug')).toBe('fix this bug')
+  expect(await submit($, 'wtf, fix this fucking bug')).toBe('fix this bug')
+  expect(log.length).toBe(2)
+  expect(JSON.stringify(log[0])).toContain('removed 1 word')
+  expect(JSON.stringify(log[1])).toContain('removed 2 words')
+  for (const line of log) expect(JSON.stringify(line)).not.toMatch(/damn|wtf|fuck/)
 })
 
-test('other transcript rows are drawn as they are', async ($, on) => {
-  arrange(on)
-  drawRows(on)
-  const ui = await $.ui.mount({
-    plugin: 'unmean',
-    surface: 'terminal',
-    component: 'UserMessage',
-    requestId: 'msg-2',
-    props: { text: 'hello there', origin: COMPOSER, isExpanded: true },
-  })
-  expect(await ui.find({ type: 'Text', text: 'hello there' })).toBeDefined()
-  await ui.unmount()
+test('"notify": false removes silently', async ($, on) => {
+  const log: unknown[] = []
+  arrange(on, { config: '{ "notify": false }', log })
+  expect(await submit($, 'fix this damn bug')).toBe('fix this bug')
+  expect(log.length).toBe(0)
 })
