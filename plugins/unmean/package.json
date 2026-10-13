@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Removes or masks listed bad words before forwarding your prompt to Claude, while preserving code snippets and paths.",
+  "description": "A Claude Code chaperone to filter out unconstructive and demeaning prompts without interrupting your workflow.",
   "license": "MIT",
   "scripts": {
     "test": "node --test \"tests/**/*.node.test.mjs\" && claude plugin test .",

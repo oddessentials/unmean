@@ -3,3 +3,4 @@ node_modules/
 plugins/*/.claude-plugin/types/
 plugins/*/tsconfig.json
 *.log
+tmp/
