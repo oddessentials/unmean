@@ -150,7 +150,7 @@ function removeSpan(text, s, e) {
     a -= pre.length - pre.replace(/[ \t]*,[ \t]*$/, '').length
   } else if (/^[ \t]/.test(post) && (/[ \t]$/.test(pre) || atSentenceStart)) {
     b += 1
-  } else if (/[ \t]$/.test(pre)) {
+  } else if (/[ \t]$/.test(pre) && !/^[A-Za-z0-9_]/.test(post)) {
     a -= 1
   }
 
