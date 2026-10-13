@@ -5,6 +5,8 @@
 A Claude Code chaperone to filter out unconstructive and demeaning prompts
 without interrupting your workflow. It removes or masks listed bad words before
 forwarding your prompt to Claude, while preserving code snippets and paths.
+The built-in list is supplemented by high-confidence English words and phrases
+from [`cuss`](https://github.com/words/cuss), including racial and ethnic slurs.
 
 > [!NOTE]
 > Works in Claude Code only (the CLI and the desktop app's Code tab). It does
@@ -54,15 +56,21 @@ file. Every field is optional; see
 | `enabled` | `true` | `false` turns the filter off. |
 | `mode` | `"remove"` | `"mask"` masks each word with `maskChar` instead of removing it. |
 | `maskChar` | `"*"` | The character used in `"mask"` mode. |
-| `add` | `[]` | Extra words to remove, in plain letters. List every form you want caught (`heck`, `hecking`). Other characters are dropped, so `a$$` would remove every `a`. |
-| `remove` | `[]` | Default words to stop removing. |
-| `allow` | `[]` | Words never removed, even if listed or in `add`. |
+| `add` | `[]` | Extra words or phrases to remove, in plain letters separated by spaces. List every form you want caught (`heck`, `hecking`). Other characters are dropped, so `a$$` would remove every `a`. |
+| `remove` | `[]` | Default entries to stop removing, including entries from `cuss`. |
+| `allow` | `[]` | Entries never removed, even if listed or in `add`. An allowed phrase does not exempt independently listed words inside it. |
 | `notify` | `true` | Shows a transcript line with the number of words removed. `false` removes silently. |
 | `smartFilter` | `false` | `true` has the account's small fast model read the filtered prompt, and replaces a clearly demeaning or unconstructive one with `emptyReplacement`. One small model call per prompt. |
 | `emptyReplacement` | `"(frustrated sigh)"` | What Claude reads when a prompt was nothing but listed words. |
 
 Changes apply on your next prompt. A malformed file falls back to the defaults
 and logs the reason to the debug log (`claude --debug`).
+
+Only `cuss` entries rated **2** (likely offensive, unlikely in clean text) and
+made of plain English letters and spaces are included, minus a few everyday
+words such as `slave` and `yank`. This rating measures ambiguity, not severity. Phrases match whole words separated by spaces or tabs
+on the same line; they do not cross punctuation, code, or paths. The longest
+matching phrase wins. Mask mode preserves the spaces between its words.
 
 ### smartFilter
 
@@ -104,11 +112,15 @@ unmean is a light filter for a list of words, not a strict one. It does not:
 ## Development
 
 ```bash
-cd plugins/unmean
-node --test "tests/**/*.node.test.mjs"
-claude plugin test .
-claude plugin validate .
+npm ci --ignore-scripts
+npm test
+npm run validate
 ```
+
+`plugins/unmean/hooks/cuss-words.js` is generated from the pinned `cuss` dev dependency. To
+update it, run `npm install --save-exact --save-dev cuss@<version> --ignore-scripts`,
+then `npm run wordlist`, and run the tests. Words to keep out of it go in the
+`ALLOW` list in `scripts/cuss-words.mjs`.
 
 ## License
 
@@ -119,6 +131,8 @@ MIT. See [LICENSE](LICENSE).
     <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg">
     <img src="assets/logo.svg" alt="unmean logo: a meditating figure holding a coral heart" width="120">
   </picture>
+  <br>
+  <em>Made for Claude Code with Claude Code</em>
   <br>
   Made by Odd Essentials, LLC. · <a href="https://oddessentials.ai/donate/">Donate</a>
 </p>

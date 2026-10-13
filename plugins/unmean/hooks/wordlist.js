@@ -1,3 +1,5 @@
+import { CUSS_WORDS } from './cuss-words.js'
+
 export const DEFAULT_WORDS = [
   'fuck', 'fucks', 'fucked', 'fucking', 'fuckin', 'fucker', 'fuckers',
   'motherfucker', 'motherfuckers', 'motherfucking', 'motherfuckin',
@@ -19,4 +21,5 @@ export const DEFAULT_WORDS = [
   'tosser', 'tossers', 'slut', 'sluts', 'whore', 'whores',
   'douche', 'douchebag', 'douchebags', 'scumbag', 'scumbags',
   'wtf', 'stfu', 'omfg', 'lmfao', 'ffs', 'mofo',
+  ...CUSS_WORDS,
 ]

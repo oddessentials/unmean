@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { clean, compile, DEFAULT_CONFIG, isFlagged } from '../hooks/filter.js'
 import { parseConfigText } from '../hooks/config.js'
+import { DEFAULT_WORDS } from '../hooks/wordlist.js'
 import { CASES, FLAGGED, NOT_FLAGGED } from './cases.js'
 
 const defaults = compile(DEFAULT_CONFIG)
@@ -19,6 +20,20 @@ test('listed words are flagged', () => {
 
 test('innocent words are not flagged', () => {
   for (const t of NOT_FLAGGED) assert.equal(isFlagged(t, defaults), false, t)
+})
+
+test('every default entry, including the external vocabulary, is removed as a whole', () => {
+  for (const [index, word] of DEFAULT_WORDS.entries()) {
+    const result = clean(`before ${word} after`, defaults)
+    assert.ok(result.text === 'before after', `entry ${index} was not fully removed`)
+    assert.ok(result.count === word.split(' ').length, `entry ${index} had the wrong word count`)
+  }
+})
+
+test('phrase matches count words once, including when a word is also listed', () => {
+  const result = clean('a purple turtle dances today', compile({ add: ['purple', 'purple turtle', 'purple turtle dances'] }))
+  assert.equal(result.count, 3)
+  assert.equal(result.matches.length, 1)
 })
 
 test('malformed input: a non-string prompt passes through', () => {
