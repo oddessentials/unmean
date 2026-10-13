@@ -3,6 +3,9 @@
 A Claude Code plugin that removes or masks listed bad words before forwarding
 your prompt to Claude, while preserving code snippets and paths.
 
+Works in Claude Code only (the CLI and the desktop app's Code tab). It does
+nothing in claude.ai chat or Cowork.
+
 Made by Odd Essentials, LLC.
 
 ## What it is not
