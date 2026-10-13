@@ -6,5 +6,6 @@
   "remove": [],
   "allow": [],
   "notify": true,
+  "smartFilter": false,
   "emptyReplacement": "(frustrated sigh)"
 }

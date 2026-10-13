@@ -47,6 +47,7 @@ file. Every field is optional; see
 | `remove` | `[]` | Default words to stop removing. |
 | `allow` | `[]` | Words never removed, even if listed or in `add`. |
 | `notify` | `true` | Shows a transcript line with the number of words removed. `false` removes silently. |
+| `smartFilter` | `false` | `true` has the account's small fast model read the filtered prompt, and replaces a clearly demeaning or unconstructive one with `emptyReplacement`. One small model call per prompt. |
 | `emptyReplacement` | `"(frustrated sigh)"` | What Claude reads when a prompt was nothing but listed words. |
 
 Changes apply on your next prompt. A malformed file falls back to the defaults

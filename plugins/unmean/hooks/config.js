@@ -22,6 +22,7 @@ export function validateConfig(raw) {
     switch (key) {
       case 'enabled':
       case 'notify':
+      case 'smartFilter':
         if (typeof value === 'boolean') config[key] = value
         else problems.push(`${key} must be true or false`)
         break
