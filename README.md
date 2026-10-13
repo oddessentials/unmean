@@ -2,8 +2,9 @@
 
 # unmean
 
-A Claude Code plugin that removes or masks listed bad words before forwarding
-your prompt to Claude, while preserving code snippets and paths.
+A Claude Code chaperone to filter out unconstructive and demeaning prompts
+without interrupting your workflow. It removes or masks listed bad words before
+forwarding your prompt to Claude, while preserving code snippets and paths.
 
 > [!NOTE]
 > Works in Claude Code only (the CLI and the desktop app's Code tab). It does
