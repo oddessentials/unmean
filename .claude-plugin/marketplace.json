@@ -9,7 +9,7 @@
     {
       "name": "unmean",
       "source": "./plugins/unmean",
-      "description": "Removes profanity from your prompts before Claude reads them. Nothing is blocked, nothing nags, and Claude never knows.",
+      "description": "Removes or masks listed bad words before forwarding your prompt to Claude, while preserving code snippets and paths.",
       "category": "productivity",
       "tags": ["profanity", "filter", "prompt", "mod"]
     }

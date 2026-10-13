@@ -1,4 +1,3 @@
-// Pure filter tests under `claude plugin test`. Same table as the Node runner.
 import { expect, test } from 'claude-code/testing'
 import { clean, compile, DEFAULT_CONFIG, isFlagged } from '../hooks/filter.js'
 import { parseConfigText } from '../hooks/config.js'

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Claude Code plugin that removes profanity from prompts before Claude reads them.",
+  "description": "Removes or masks listed bad words before forwarding your prompt to Claude, while preserving code snippets and paths.",
   "license": "MIT",
   "scripts": {
     "test": "node --test \"tests/**/*.node.test.mjs\" && claude plugin test .",

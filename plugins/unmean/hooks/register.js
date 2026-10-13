@@ -1,18 +1,9 @@
-// unmean: the hooks module Claude Code loads.
-//
-// One hook: prompt.submit rewrites the prompt before Claude reads it, so
-// flagged words never reach Claude, the stored message, or the transcript.
-//
-// Everything fails open: on any error the prompt goes through untouched.
-
 import { clean, compile, DEFAULT_CONFIG } from './filter.js'
 import { parseConfigText } from './config.js'
 
 const PLUGIN = 'unmean'
 const CONFIG_FILE = 'unmean.json'
 const OFF_VALUES = new Set(['0', 'off', 'false', 'no'])
-// Prompts the person wrote themselves. Task notifications, peer sessions,
-// scheduled triggers and other plugins' prompts pass through untouched.
 const USER_ORIGINS = new Set(['composer', 'bridge', 'sdk', 'slack-ping', 'unclassified'])
 
 const DEFAULT_COMPILED = compile(DEFAULT_CONFIG)

@@ -1,9 +1,3 @@
-// Shared table for the pure filter tests. Both runners use it:
-//   tests/filter.node.test.mjs  (node --test, no Claude Code needed)
-//   tests/filter.test.ts        (claude plugin test)
-//
-// `config` is merged over the defaults; `expected` is what Claude would read.
-
 const same = input => ({ input, expected: input })
 
 export const CASES = [
@@ -29,6 +23,12 @@ export const CASES = [
   { name: 'fenced code is left alone', ...same('see:\n```\nlet shit = 1\n```\nfix it') },
   { name: 'identifiers with underscores or dots are left alone', ...same('rename damn_var and obj.ass') },
   { name: 'URLs are left alone', ...same('see https://example.com/fuck/this') },
+  { name: 'Windows paths are left alone', ...same('open C:\\Users\\me\\ass.txt and fix it') },
+  { name: 'email addresses are left alone', ...same('mail fuck@example.com now') },
+  { name: 'a dotted name protects only itself', input: 'rename obj.ass to something, damn', expected: 'rename obj.ass to something' },
+  { name: 'an unclosed fence protects everything after it', ...same('see:\n```\nlet shit = 1\nand damn') },
+  { name: 'code in doubled backticks is left alone', ...same('``shit``') },
+  { name: 'a lone backtick protects nothing', input: 'use ` carefully, this is shit', expected: 'use ` carefully, this is' },
   { name: 'markdown emphasis is not read as self-censoring', ...same('this is **bold** and *italic*') },
   { name: 'the default allow list', ...same('the damning evidence') },
   { name: 'newlines survive', input: 'line one damn\nline two', expected: 'line one\nline two' },
@@ -45,12 +45,10 @@ export const CASES = [
   { name: 'the empty replacement is configurable', config: { emptyReplacement: 'hello' }, input: 'damn', expected: 'hello' },
 ]
 
-// Tokens the matcher must catch.
 export const FLAGGED = [
   'FUCK', 'Fucked', 'fuckin', 'bitches', 'shitty', 'crappy', "asshole's", 'WTF',
 ]
 
-// Tokens the matcher must leave alone.
 export const NOT_FLAGGED = [
   'Scunthorpe', 'assess', 'assessed', 'assesses', 'assessment', 'classic', 'bass', 'passes',
   'shiitake', 'cocktail', 'assassin', 'as', 'dickens', 'asset', 'hello', 'damning',
