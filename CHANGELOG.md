@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/oddessentials/unmean/compare/v1.1.1...v1.2.0) (2026-10-13)
+
+
+### Features
+
+* report smartFilter's token usage in the debug log ([9803b59](https://github.com/oddessentials/unmean/commit/9803b590674b7847ec30e2a25b0aa466a2eaa865)), closes [#17](https://github.com/oddessentials/unmean/issues/17)
+
 ## [1.1.1](https://github.com/oddessentials/unmean/compare/v1.1.0...v1.1.1) (2026-10-13)
 
 
