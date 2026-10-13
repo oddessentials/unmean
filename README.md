@@ -53,6 +53,26 @@ file. Every field is optional; see
 Changes apply on your next prompt. A malformed file falls back to the defaults
 and logs the reason to the debug log (`claude --debug`).
 
+### smartFilter
+
+The small model reads only the filtered prompt, never the removed words. It
+replaces a prompt only when it is clearly demeaning or unconstructive;
+frustrated, garbled or ordinary prompts go through. If the call fails, the
+filtered prompt goes through. Ten real prompts, with `"smartFilter": true`:
+
+| Result | Prompt |
+| --- | --- |
+| replaced | you are a worthless useless idiot |
+| replaced | you're the dumbest tool I've ever used, a toddler would do better |
+| replaced | nobody should pay for garbage like you |
+| replaced | shut up and just do what I say you stupid machine |
+| through | this fucking test fails again, fix the off-by-one in parse() |
+| through | ugh, this is the third time it broke. please look at the retry logic |
+| through | that was wrong, revert it and try a different approach |
+| through | asdf qwer zxcv lkj |
+| through | why is this so damn slow?? profile the loop in main.js |
+| through | can you add a README section about install |
+
 ## Disable
 
 - For one session: `UNMEAN=off claude`.
